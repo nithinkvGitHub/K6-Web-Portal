@@ -220,6 +220,7 @@ async function orchestrateDistributedRun(params) {
   }
 
   const workerPromises = selectedWorkers.map((worker, idx) => {
+    const actualWorkerIdx = workerNodes.indexOf(worker) !== -1 ? workerNodes.indexOf(worker) : idx;
     const isTwoWorkers = selectedWorkers.length === 2;
     const segment = !isTwoWorkers ? '0:1' : idx === 0 ? '0:0.5' : '0.5:1';
     const segmentRatio = !isTwoWorkers || distributionMode === 'multi-protocol-http-sse' ? 1.0 : 0.5;
@@ -227,7 +228,7 @@ async function orchestrateDistributedRun(params) {
 
     if (mode === 'multi-population') {
       const assignedSummary = (populations || [])
-        .map((p) => `${p.populationId}:${idx === 0 ? p.injector1Pct : p.injector2Pct}%`)
+        .map((p) => `${p.populationId}:${actualWorkerIdx === 0 ? p.injector1Pct : p.injector2Pct}%`)
         .join(', ');
       logPipeline(
         'Stage 2: Multi-Injector Populations',
@@ -301,7 +302,7 @@ async function orchestrateDistributedRun(params) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             mode,
-            workerIndex: idx,
+            workerIndex: actualWorkerIdx,
             projectId,
             populations,
             scriptRelPath,
@@ -624,7 +625,11 @@ async function startAllServices() {
           fetch(`${w.url}/job/stop`, { method: 'POST' }).catch(() => {})
         )
       );
-      logPipeline('Abort', 'User requested stop across all EC2 worker nodes.', 'warn');
+      if (activePipeline) {
+        activePipeline.stage = 'stopped';
+        broadcast('pipeline_state', activePipeline);
+      }
+      logPipeline('Abort', 'User requested stop across selected load injectors.', 'warn');
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: true }));
       return;

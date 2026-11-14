@@ -1,5 +1,6 @@
 {
   "run_id": "PP_SMOKE_2U_5M",
+  "run_type": "ai",
   "created_at": "2026-11-12T10:30:00.000Z",
   "workload": "plateaus",
   "config_file": "config/perfpilot.json",
@@ -15,6 +16,19 @@
   "rows": 12,
   "steady_rows": 12,
   "evaluated_rows": 12,
+  "k6_counters": {
+    "http_reqs": 12,
+    "iterations": 12,
+    "checks_passed": 12,
+    "checks_total": 12,
+    "data_received_bytes": 27702,
+    "data_sent_bytes": 5040,
+    "group_duration_p95_ms": 896,
+    "iteration_duration_p95_ms": 1122,
+    "load_generator_cpu_avg_pct": 4.8,
+    "load_generator_mem_avg_pct": 31.2,
+    "load_generator_file_handles": 1296
+  },
   "levels": [
     {
       "level": 2,

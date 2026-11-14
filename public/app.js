@@ -6,6 +6,25 @@ let currentExecMode = 'multi-population'; // 'multi-population' | 'aiperf' | 'di
 let activePopulations = [];
 let liveCounterMode = 'k6'; // 'k6' | 'ai'
 let runHistoryFilter = 'all'; // 'all' | 'k6' | 'ai'
+let currentTheme = localStorage.getItem('aiperf_theme') || 'light';
+
+function applyTheme(theme) {
+  currentTheme = theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  localStorage.setItem('aiperf_theme', currentTheme);
+  const btn = document.getElementById('btnThemeToggle');
+  if (btn) {
+    btn.innerHTML = currentTheme === 'light' ? '&#127769; Dark Theme' : '&#9728;&#65039; Light Theme';
+  }
+}
+
+function toggleTheme() {
+  applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+  renderLiveChart(liveRows);
+  if (typeof renderGrafanaCloudRunView === 'function' && currentRunData?.summary) {
+    renderGrafanaCloudRunView();
+  }
+}
 
 function setLiveCounterMode(mode) {
   liveCounterMode = mode;
@@ -68,6 +87,125 @@ function renderProjectWorkspaces(projects = []) {
   onSelectProjectWorkspace(false);
 }
 
+function getInjectorDistributionMode() {
+  const c1 = document.getElementById('chkInjector1')?.checked ?? true;
+  const c2 = document.getElementById('chkInjector2')?.checked ?? false;
+  if (c1 && c2) return 'split-50-50';
+  if (c2 && !c1) return 'worker-2-only';
+  return 'worker-1-only';
+}
+
+function applyInjectorSelectionToPopulations(mode) {
+  activePopulations.forEach((pop) => {
+    if (mode === 'worker-1-only') {
+      pop.injectorDistribution = 'injector-1';
+      pop.injector1Pct = 100;
+      pop.injector2Pct = 0;
+    } else if (mode === 'worker-2-only') {
+      pop.injectorDistribution = 'injector-2';
+      pop.injector1Pct = 0;
+      pop.injector2Pct = 100;
+    } else if (mode === 'split-50-50') {
+      if (pop.injectorDistribution === 'injector-1' || pop.injectorDistribution === 'injector-2') {
+        pop.injectorDistribution = '50-50';
+        pop.injector1Pct = 50;
+        pop.injector2Pct = 50;
+      }
+    }
+  });
+}
+
+function updateInjectorSelectionUi() {
+  const c1El = document.getElementById('chkInjector1');
+  const c2El = document.getElementById('chkInjector2');
+  const badgeEl = document.getElementById('injectorSelectionBadge');
+  const summaryEl = document.getElementById('injectorSelectionSummary');
+  if (!c1El || !c2El) return;
+
+  const mode = getInjectorDistributionMode();
+  const selDirect = document.getElementById('selDirectK6DistMode');
+  const selAi = document.getElementById('selDistMode');
+  if (selDirect) selDirect.value = mode;
+  if (selAi && selAi.value !== 'multi-protocol-http-sse') selAi.value = mode;
+
+  if (mode === 'split-50-50') {
+    if (badgeEl) {
+      badgeEl.className = 'badge badge-info';
+      badgeEl.textContent = '2 Injectors (Distributed)';
+    }
+    if (summaryEl) {
+      summaryEl.innerHTML = 'Distributing load across <strong>both selected injectors</strong> (<code>EC2-Worker-01</code> + <code>EC2-Worker-02</code>).';
+    }
+  } else if (mode === 'worker-2-only') {
+    if (badgeEl) {
+      badgeEl.className = 'badge badge-warn';
+      badgeEl.textContent = '1 Injector (Remote #2)';
+    }
+    if (summaryEl) {
+      summaryEl.innerHTML = 'Running 100% load on remote injector <code>EC2-Worker-02</code>.';
+    }
+  } else {
+    if (badgeEl) {
+      badgeEl.className = 'badge badge-pass';
+      badgeEl.textContent = '1 Injector (Local Host)';
+    }
+    if (summaryEl) {
+      summaryEl.innerHTML = 'Default: Running 100% load on Web Portal Host (<code>EC2-Worker-01</code>). Check <code>EC2-Worker-02</code> to distribute load across multiple injectors.';
+    }
+  }
+}
+
+function onInjectorSelectionChange(changedIdx) {
+  const c1El = document.getElementById('chkInjector1');
+  const c2El = document.getElementById('chkInjector2');
+  if (!c1El || !c2El) return;
+
+  // Ensure at least one injector remains checked
+  if (!c1El.checked && !c2El.checked) {
+    if (changedIdx === 1) c2El.checked = true;
+    else c1El.checked = true;
+  }
+
+  syncPopulationsFromDom();
+  const mode = getInjectorDistributionMode();
+  applyInjectorSelectionToPopulations(mode);
+  updateInjectorSelectionUi();
+  renderPopulationsBuilder();
+}
+
+function syncInjectorCheckboxesFromDropdown(val) {
+  const c1El = document.getElementById('chkInjector1');
+  const c2El = document.getElementById('chkInjector2');
+  if (!c1El || !c2El) return;
+  if (val === 'worker-1-only') {
+    c1El.checked = true;
+    c2El.checked = false;
+  } else if (val === 'worker-2-only') {
+    c1El.checked = false;
+    c2El.checked = true;
+  } else {
+    c1El.checked = true;
+    c2El.checked = true;
+  }
+  applyInjectorSelectionToPopulations(getInjectorDistributionMode());
+  updateInjectorSelectionUi();
+  renderPopulationsBuilder();
+}
+
+function setRunActiveState(isActive) {
+  const btnStop = document.getElementById('btnStopRun');
+  const btnStart = document.getElementById('btnStartRun');
+  const btnQuick = document.getElementById('btnQuickRunTop');
+  if (btnStop) btnStop.disabled = !isActive;
+  if (btnStart) {
+    btnStart.disabled = isActive;
+    btnStart.innerHTML = isActive ? '&#9203; Running...' : '&#9654; Run';
+  }
+  if (btnQuick) {
+    btnQuick.disabled = isActive;
+  }
+}
+
 function onSelectProjectWorkspace(resetPops = true) {
   const proj = getSelectedProject();
   if (!proj) return;
@@ -92,11 +230,12 @@ function onSelectProjectWorkspace(resetPops = true) {
         vus: ep.defaultVus || 6,
         duration: '7s',
         dataset: (proj.datasets || [])[0] || '',
-        injectorDistribution: '50-50',
-        injector1Pct: 50,
-        injector2Pct: 50
+        injectorDistribution: 'injector-1',
+        injector1Pct: 100,
+        injector2Pct: 0
       }));
     }
+    applyInjectorSelectionToPopulations(getInjectorDistributionMode());
     renderPopulationsBuilder();
   }
 }
@@ -200,6 +339,7 @@ function addPopulationRow() {
   syncPopulationsFromDom();
   const proj = getSelectedProject();
   const ep = proj?.entrypoints?.[0] || { file: 'flows/catalog-search.js', exec: 'catalogSearchFlow', protocol: 'HTTP' };
+  const mode = getInjectorDistributionMode();
   activePopulations.push({
     populationId: `POP_${activePopulations.length + 1}_CUSTOM`,
     name: `Population ${activePopulations.length + 1}`,
@@ -210,9 +350,9 @@ function addPopulationRow() {
     vus: 6,
     duration: '8s',
     dataset: proj?.datasets?.[0] || '',
-    injectorDistribution: '50-50',
-    injector1Pct: 50,
-    injector2Pct: 50
+    injectorDistribution: mode === 'worker-1-only' ? 'injector-1' : mode === 'worker-2-only' ? 'injector-2' : '50-50',
+    injector1Pct: mode === 'worker-1-only' ? 100 : mode === 'worker-2-only' ? 0 : 50,
+    injector2Pct: mode === 'worker-1-only' ? 0 : mode === 'worker-2-only' ? 100 : 50
   });
   renderPopulationsBuilder();
 }
@@ -241,7 +381,7 @@ async function previewCompositeRunner() {
   box.classList.remove('hidden');
   box.innerHTML = `
     <label>Generated Composite Multi-Population k6 Entrypoint (Synced to EC2 Injectors)</label>
-    <pre style="background:#05070d;border:1px solid var(--border);border-radius:6px;padding:10px;font-size:11px;overflow-x:auto;color:#a5b4fc;margin:0;">${esc(data.script)}</pre>
+    <pre class="code-pre" style="padding:10px;font-size:11px;">${esc(data.script)}</pre>
   `;
 }
 
@@ -348,9 +488,13 @@ async function loadOverview() {
 
   if (overviewState.workers?.[0]) {
     document.getElementById('inpWorker1Url').value = overviewState.workers[0].url;
+    const lbl1 = document.getElementById('lblInjector1Addr');
+    if (lbl1) lbl1.textContent = overviewState.workers[0].url.replace('http://', '');
   }
   if (overviewState.workers?.[1]) {
     document.getElementById('inpWorker2Url').value = overviewState.workers[1].url;
+    const lbl2 = document.getElementById('lblInjector2Addr');
+    if (lbl2) lbl2.textContent = overviewState.workers[1].url.replace('http://', '');
   }
 
   renderHeaderCluster(overviewState.workers, overviewState.mockAgent);
@@ -360,12 +504,21 @@ async function loadOverview() {
   populateCompareSelectors(overviewState.runs);
   renderStudioFileList(overviewState.files);
 
-  if (overviewState.activePipeline && overviewState.activePipeline.rows?.length && liveRows.length === 0) {
-    liveRows = overviewState.activePipeline.rows;
-    updatePipelineStepper(overviewState.activePipeline);
-    renderLiveMetricsAndChart();
-    renderLiveRowsTable();
+  if (overviewState.activePipeline) {
+    const p = overviewState.activePipeline;
+    const isRunActive = p.stage === 'stage1_preflight' || p.stage === 'stage2_k6_distributed' || p.stage === 'stage3_postprocess';
+    setRunActiveState(isRunActive);
+    if (p.rows?.length && liveRows.length === 0) {
+      liveRows = p.rows;
+      updatePipelineStepper(p);
+      renderLiveMetricsAndChart();
+      renderLiveRowsTable();
+    } else {
+      updatePipelineStepper(p);
+      renderLiveChart(liveRows);
+    }
   } else {
+    setRunActiveState(false);
     renderLiveChart([]);
   }
 }
@@ -461,16 +614,19 @@ async function startPipelineRun() {
   renderLiveMetricsAndChart();
   renderLiveRowsTable();
 
+  const injectorDistMode = getInjectorDistributionMode();
+
   let payload;
   if (currentExecMode === 'multi-population') {
     syncPopulationsFromDom();
+    applyInjectorSelectionToPopulations(injectorDistMode);
     const proj = getSelectedProject();
     payload = {
       mode: 'multi-population',
       runId: document.getElementById('inpRunId').value.trim() || `MULTIPOP_${new Date().toTimeString().slice(0, 8).replace(/:/g, '')}`,
       projectId: proj?.id || 'enterprise-omni-framework',
       populations: activePopulations,
-      distributionMode: 'split-50-50',
+      distributionMode: injectorDistMode,
       configRel: 'config/perfpilot.json',
       gatesRel: 'config/gates.perfpilot.json',
       skipPreflight: true
@@ -490,7 +646,7 @@ async function startPipelineRun() {
       runId: document.getElementById('inpRunId').value.trim() || `K6_FLOWS_${new Date().toTimeString().slice(0, 8).replace(/:/g, '')}`,
       scriptRelPath,
       selectedScenarios: checkedScenarios,
-      distributionMode: document.getElementById('selDirectK6DistMode').value,
+      distributionMode: injectorDistMode,
       durationOverride: document.getElementById('inpDirectK6Duration').value.trim() || '6s',
       envVars,
       configRel: 'config/default.json',
@@ -498,11 +654,12 @@ async function startPipelineRun() {
       skipPreflight: true
     };
   } else {
+    const aiDistSel = document.getElementById('selDistMode').value;
     payload = {
       mode: 'aiperf',
       runId: document.getElementById('inpRunId').value.trim() || `PP_DIST_${new Date().toTimeString().slice(0, 8).replace(/:/g, '')}`,
       workload: document.getElementById('selWorkload').value,
-      distributionMode: document.getElementById('selDistMode').value,
+      distributionMode: aiDistSel === 'multi-protocol-http-sse' && injectorDistMode === 'split-50-50' ? 'multi-protocol-http-sse' : injectorDistMode,
       configRel: document.getElementById('selConfig').value,
       gatesRel: document.getElementById('selGates').value,
       levelsStr: document.getElementById('inpLevels').value.trim() || '2,6',
@@ -513,6 +670,8 @@ async function startPipelineRun() {
     };
   }
 
+  setRunActiveState(true);
+
   const res = await fetch('/api/runs/start', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -520,12 +679,14 @@ async function startPipelineRun() {
   });
   const data = await res.json();
   if (!data.ok) {
+    setRunActiveState(false);
     alert(data.error || 'Could not start run');
   }
 }
 
 async function stopActiveRun() {
   await fetch('/api/runs/stop', { method: 'POST' });
+  setRunActiveState(false);
 }
 
 function updatePipelineStepper(p) {
@@ -536,8 +697,14 @@ function updatePipelineStepper(p) {
 
   [s1, s2, s3].forEach((el) => (el.className = 'step-box'));
 
-  if (!p) return;
+  if (!p) {
+    setRunActiveState(false);
+    return;
+  }
   badge.textContent = `${p.runId} (${p.stage})`;
+
+  const isRunning = p.stage === 'stage1_preflight' || p.stage === 'stage2_k6_distributed' || p.stage === 'stage3_postprocess';
+  setRunActiveState(isRunning);
 
   if (p.stage === 'stage1_preflight') {
     s1.classList.add('active');
@@ -554,6 +721,12 @@ function updatePipelineStepper(p) {
     s3.classList.add('done');
     badge.className = p.summary?.gate?.passed ? 'badge badge-pass' : 'badge badge-fail';
     badge.textContent = `${p.runId} — ${p.summary?.gate?.passed ? 'GATE PASSED' : 'GATE FAILED'}`;
+  } else if (p.stage === 'stopped') {
+    badge.className = 'badge badge-warn';
+    badge.textContent = `${p.runId} — STOPPED`;
+  } else if (p.stage === 'failed') {
+    badge.className = 'badge badge-fail';
+    badge.textContent = `${p.runId} — FAILED`;
   }
 }
 
@@ -650,13 +823,13 @@ function renderLiveChart(rows) {
     return;
   }
 
-  const pts = rows.slice(-40);
-  const w = 860;
-  const h = 195;
-  const padL = 48;
+  const pts = rows.slice(-50);
+  const w = 1120;
+  const h = 205;
+  const padL = 50;
   const padR = 20;
-  const padT = 18;
-  const padB = 28;
+  const padT = 22;
+  const padB = 26;
   const maxVal = Math.max(1000, ...pts.map((r) => Number(r.e2e_ms || 0))) * 1.1;
 
   const xFor = (i) => padL + (pts.length === 1 ? (w - padL - padR) / 2 : (i / (pts.length - 1)) * (w - padL - padR));
@@ -670,29 +843,29 @@ function renderLiveChart(rows) {
   const circles = pts
     .map((r, i) => {
       const isW1 = String(r.worker_id).includes('01');
-      const color = isW1 ? '#f97316' : '#38bdf8';
+      const color = isW1 ? '#f97316' : '#0891b2';
       return `<circle cx="${xFor(i).toFixed(1)}" cy="${yFor(r.e2e_ms || 0).toFixed(1)}" r="4" fill="${color}" />`;
     })
     .join('');
 
   container.innerHTML = `
     <svg viewBox="0 0 ${w} ${h}" style="width:100%;height:100%;overflow:visible;">
-      <line x1="${padL}" y1="${padT}" x2="${w - padR}" y2="${padT}" stroke="#1e293b" stroke-dasharray="3,3" />
-      <line x1="${padL}" y1="${(padT + h - padB) / 2}" x2="${w - padR}" y2="${(padT + h - padB) / 2}" stroke="#1e293b" stroke-dasharray="3,3" />
-      <line x1="${padL}" y1="${h - padB}" x2="${w - padR}" y2="${h - padB}" stroke="#334155" />
-      <text x="6" y="${padT + 4}" fill="#94a3b8" font-size="10">${Math.round(maxVal)}ms</text>
-      <text x="6" y="${(padT + h - padB) / 2 + 4}" fill="#94a3b8" font-size="10">${Math.round(maxVal / 2)}ms</text>
-      <text x="6" y="${h - padB}" fill="#94a3b8" font-size="10">0ms</text>
+      <line x1="${padL}" y1="${padT}" x2="${w - padR}" y2="${padT}" stroke="var(--chart-grid)" stroke-dasharray="3,3" />
+      <line x1="${padL}" y1="${(padT + h - padB) / 2}" x2="${w - padR}" y2="${(padT + h - padB) / 2}" stroke="var(--chart-grid)" stroke-dasharray="3,3" />
+      <line x1="${padL}" y1="${h - padB}" x2="${w - padR}" y2="${h - padB}" stroke="var(--chart-axis)" />
+      <text x="6" y="${padT + 4}" fill="var(--chart-text)" font-size="10">${Math.round(maxVal)}ms</text>
+      <text x="6" y="${(padT + h - padB) / 2 + 4}" fill="var(--chart-text)" font-size="10">${Math.round(maxVal / 2)}ms</text>
+      <text x="6" y="${h - padB}" fill="var(--chart-text)" font-size="10">0ms</text>
 
       <polyline fill="none" stroke="#f97316" stroke-width="2.5" points="${e2ePoly}" />
       <polyline fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="4,3" points="${ttftPoly}" />
       ${circles}
 
-      <g transform="translate(${padL + 10}, 6)">
+      <g transform="translate(${padL + 10}, 5)">
         <rect x="0" y="0" width="10" height="10" fill="#f97316" rx="2" />
-        <text x="14" y="9" fill="#cbd5e1" font-size="10.5">E2E Latency (Orange=EC2-01, Cyan=EC2-02)</text>
-        <rect x="250" y="0" width="10" height="10" fill="#10b981" rx="2" />
-        <text x="264" y="9" fill="#cbd5e1" font-size="10.5">TTFT (Time-to-First-Token)</text>
+        <text x="14" y="9" fill="var(--text-1)" font-size="11" font-weight="600">E2E Latency (Orange=EC2-01, Cyan=EC2-02)</text>
+        <rect x="275" y="0" width="10" height="10" fill="#10b981" rx="2" />
+        <text x="289" y="9" fill="var(--text-1)" font-size="11" font-weight="600">TTFT (Time-to-First-Token)</text>
       </g>
     </svg>
   `;
@@ -1118,6 +1291,7 @@ function connectLiveSse() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  applyTheme(currentTheme);
   loadOverview();
   connectLiveSse();
   setInterval(loadOverview, 4000);

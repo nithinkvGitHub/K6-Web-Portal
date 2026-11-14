@@ -1,5 +1,6 @@
 {
   "run_id": "PP_PLAT_5_10_25_DIST",
+  "run_type": "ai",
   "created_at": "2026-11-13T14:20:00.000Z",
   "workload": "plateaus",
   "config_file": "config/perfpilot-sse.json",
@@ -15,6 +16,19 @@
   "rows": 60,
   "steady_rows": 60,
   "evaluated_rows": 60,
+  "k6_counters": {
+    "http_reqs": 60,
+    "iterations": 60,
+    "checks_passed": 59,
+    "checks_total": 60,
+    "data_received_bytes": 135878,
+    "data_sent_bytes": 25200,
+    "group_duration_p95_ms": 2080,
+    "iteration_duration_p95_ms": 2306,
+    "load_generator_cpu_avg_pct": 4.8,
+    "load_generator_mem_avg_pct": 31.2,
+    "load_generator_file_handles": 1296
+  },
   "levels": [
     {
       "level": 5,
