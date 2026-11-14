@@ -1,4 +1,8 @@
 node_modules/
-.env
-*.log
 .DS_Store
+Thumbs.db
+*.log
+demo-framework/results/MULTIPOP_*
+demo-framework/results/K6_FLOWS_*
+demo-framework/results/PP_DIST_*
+demo-framework/results/RUN_*
