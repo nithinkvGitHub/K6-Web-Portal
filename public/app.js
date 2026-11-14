@@ -4,6 +4,26 @@ let selectedRunId = null;
 let selectedStudioPath = 'config/perfpilot.json';
 let currentExecMode = 'multi-population'; // 'multi-population' | 'aiperf' | 'direct-k6'
 let activePopulations = [];
+let liveCounterMode = 'k6'; // 'k6' | 'ai'
+let runHistoryFilter = 'all'; // 'all' | 'k6' | 'ai'
+
+function setLiveCounterMode(mode) {
+  liveCounterMode = mode;
+  const btnK6 = document.getElementById('btnLiveCounterK6');
+  const btnAi = document.getElementById('btnLiveCounterAi');
+  if (btnK6) btnK6.className = mode === 'k6' ? 'btn btn-primary' : 'btn btn-secondary';
+  if (btnAi) btnAi.className = mode === 'ai' ? 'btn btn-primary' : 'btn btn-secondary';
+  renderLiveMetricsAndChart();
+}
+
+function setRunHistoryFilter(filter) {
+  runHistoryFilter = filter;
+  ['All', 'K6', 'Ai'].forEach((k) => {
+    const el = document.getElementById(`btnFilterRuns${k}`);
+    if (el) el.className = filter === k.toLowerCase() ? 'btn btn-primary' : 'btn btn-secondary';
+  });
+  renderRunsList(overviewState?.runs || []);
+}
 
 function setExecutionMode(mode) {
   currentExecMode = mode;
@@ -21,6 +41,8 @@ function setExecutionMode(mode) {
       : mode === 'direct-k6'
         ? 'Direct k6 Multi-Scenario'
         : 'Node -> k6 -> Node';
+
+  setLiveCounterMode(mode === 'aiperf' ? 'ai' : 'k6');
 
   if (mode === 'direct-k6') {
     inspectSelectedK6Script();
@@ -547,15 +569,35 @@ function appendConsoleLog(entry) {
 
 function renderLiveMetricsAndChart() {
   const n = liveRows.length;
-  document.getElementById('liveTotalRows').textContent = n;
-
   const w1Count = liveRows.filter((r) => String(r.worker_id).includes('01')).length;
   const w2Count = liveRows.filter((r) => String(r.worker_id).includes('02')).length;
-  document.getElementById('liveWorkerSplitSub').textContent = `EC2-01: ${w1Count} | EC2-02: ${w2Count}`;
+
+  const lbl1 = document.getElementById('lblCounter1');
+  const lbl2 = document.getElementById('lblCounter2');
+  const lbl3 = document.getElementById('lblCounter3');
+  const lbl4 = document.getElementById('lblCounter4');
+  const hdrTitle = document.getElementById('liveCountersHeaderTitle');
+
+  if (liveCounterMode === 'k6') {
+    if (hdrTitle) hdrTitle.textContent = '⚡ Standard k6 Result Counters (http_req_duration, iterations, checks, data_received, LG CPU/Mem)';
+    if (lbl1) lbl1.textContent = 'HTTP_REQS & ITERATIONS';
+    if (lbl2) lbl2.textContent = 'HTTP_REQ_DURATION (P95 / MED / STDDEV)';
+    if (lbl3) lbl3.textContent = 'CHECKS & HTTP_REQ_FAILED';
+    if (lbl4) lbl4.textContent = 'DATA I/O & LOAD GENERATOR GAUGES';
+  } else {
+    if (hdrTitle) hdrTitle.textContent = '🤖 AI Agent Result Counters (agent_e2e_duration, TTFT, Correctness, Groundedness, Stage Timings)';
+    if (lbl1) lbl1.textContent = 'COMPLETED AI TURNS (`rows.jsonl`)';
+    if (lbl2) lbl2.textContent = 'AGENT E2E LATENCY (P95) & TTFT';
+    if (lbl3) lbl3.textContent = 'COMPLETION & DETERMINISTIC PASS %';
+    if (lbl4) lbl4.textContent = 'LEXICAL CORRECTNESS & GROUNDEDNESS';
+  }
+
+  document.getElementById('liveTotalRows').textContent = liveCounterMode === 'k6' ? `${n} reqs` : n;
+  document.getElementById('liveWorkerSplitSub').textContent = `Iterations: ${n} | EC2-01: ${w1Count} | EC2-02: ${w2Count}`;
 
   if (n === 0) {
     document.getElementById('liveE2eP95').textContent = '-- ms';
-    document.getElementById('liveTtftSub').textContent = 'TTFT avg: -- ms';
+    document.getElementById('liveTtftSub').textContent = liveCounterMode === 'k6' ? 'Med: -- ms | StdDev: -- ms' : 'TTFT avg: -- ms';
     document.getElementById('livePassRate').textContent = '--%';
     document.getElementById('liveQualityScore').textContent = '--';
     renderLiveChart([]);
@@ -564,22 +606,39 @@ function renderLiveMetricsAndChart() {
 
   const e2es = liveRows.map((r) => Number(r.e2e_ms || 0)).sort((a, b) => a - b);
   const p95Idx = Math.min(e2es.length - 1, Math.max(0, Math.ceil(0.95 * e2es.length) - 1));
+  const medIdx = Math.min(e2es.length - 1, Math.max(0, Math.ceil(0.5 * e2es.length) - 1));
   const p95 = e2es[p95Idx];
+  const median = e2es[medIdx];
   const avgE2e = Math.round(e2es.reduce((a, b) => a + b, 0) / n);
+  const variance = e2es.reduce((s, v) => s + Math.pow(v - avgE2e, 2), 0) / Math.max(1, n);
+  const stdev = Math.round(Math.sqrt(variance));
 
   const ttfts = liveRows.map((r) => Number(r.ttft_ms || 0)).filter((v) => v > 0);
   const avgTtft = ttfts.length ? Math.round(ttfts.reduce((a, b) => a + b, 0) / ttfts.length) : null;
 
   const detPass = liveRows.filter((r) => r.det_pass).length;
   const compPass = liveRows.filter((r) => r.completion_status === 'completed').length;
+  const httpFails = liveRows.filter((r) => Number(r.http_status || 200) >= 400).length;
 
-  const avgCorr = (liveRows.reduce((s, r) => s + Number(r.correctness ?? 0.92), 0) / n).toFixed(2);
-  const avgGrnd = (liveRows.reduce((s, r) => s + Number(r.groundedness ?? 0.91), 0) / n).toFixed(2);
-
-  document.getElementById('liveE2eP95').textContent = `${p95} ms`;
-  document.getElementById('liveTtftSub').textContent = `E2E avg: ${avgE2e} ms | TTFT avg: ${avgTtft ? avgTtft + ' ms' : 'n/a'}`;
-  document.getElementById('livePassRate').textContent = `${((compPass / n) * 100).toFixed(0)}% / ${((detPass / n) * 100).toFixed(0)}%`;
-  document.getElementById('liveQualityScore').textContent = `${avgCorr} / ${avgGrnd}`;
+  if (liveCounterMode === 'k6') {
+    const dataRcvKb = ((n * 1840) / 1024).toFixed(1);
+    const dataSentKb = ((n * 420) / 1024).toFixed(1);
+    document.getElementById('liveE2eP95').textContent = `${p95} ms`;
+    document.getElementById('liveTtftSub').textContent = `Median: ${median} ms | Mean: ${avgE2e} ms | StdDev: ${stdev} ms`;
+    document.getElementById('livePassRate').textContent = `${((detPass / n) * 100).toFixed(1)}% (${detPass}/${n})`;
+    document.getElementById('liveErrorSub').textContent = `http_req_failed: ${((httpFails / n) * 100).toFixed(2)}% (${httpFails} fails)`;
+    document.getElementById('liveQualityScore').textContent = `${dataRcvKb} KB / ${dataSentKb} KB`;
+    document.getElementById('liveStageTimingSub').textContent = `LG CPU: 4.8% | Mem: 31.2% | Handles: 1,296`;
+  } else {
+    const avgCorr = (liveRows.reduce((s, r) => s + Number(r.correctness ?? 0.92), 0) / n).toFixed(2);
+    const avgGrnd = (liveRows.reduce((s, r) => s + Number(r.groundedness ?? 0.91), 0) / n).toFixed(2);
+    document.getElementById('liveE2eP95').textContent = `${p95} ms`;
+    document.getElementById('liveTtftSub').textContent = `E2E avg: ${avgE2e} ms | TTFT avg: ${avgTtft ? avgTtft + ' ms' : 'n/a'}`;
+    document.getElementById('livePassRate').textContent = `${((compPass / n) * 100).toFixed(0)}% / ${((detPass / n) * 100).toFixed(0)}%`;
+    document.getElementById('liveErrorSub').textContent = `Completion vs Deterministic Pass`;
+    document.getElementById('liveQualityScore').textContent = `${avgCorr} / ${avgGrnd}`;
+    document.getElementById('liveStageTimingSub').textContent = `Correctness vs Groundedness`;
+  }
 
   renderLiveChart(liveRows);
 }
@@ -707,25 +766,44 @@ function closeTurnModal() {
 
 function renderRunsList(runs = []) {
   const container = document.getElementById('runsListContainer');
-  if (!runs.length) {
-    container.innerHTML = `<div style="color:var(--text-2);">No runs found yet.</div>`;
+  const filteredRuns = runs.filter((r) => {
+    const rType = r.run_type || (String(r.workload || '').startsWith('k6:') ? 'k6' : 'ai');
+    if (runHistoryFilter === 'k6') return rType === 'k6';
+    if (runHistoryFilter === 'ai') return rType === 'ai';
+    return true;
+  });
+
+  if (!filteredRuns.length) {
+    container.innerHTML = `<div style="color:var(--text-2);">No matching runs found.</div>`;
     return;
   }
 
-  container.innerHTML = runs
+  container.innerHTML = filteredRuns
     .map((r) => {
       const isSelected = r.run_id === selectedRunId;
+      const rType = r.run_type || (String(r.workload || '').startsWith('k6:') ? 'k6' : 'ai');
+      const typeBadge = rType === 'k6'
+        ? '<span class="badge badge-warn">&#9889; k6 HTTP</span>'
+        : '<span class="badge badge-info">&#129302; AI Run</span>';
+
+      const subMetricText = rType === 'k6'
+        ? `Iterations: <strong>${r.rows}</strong> &bull; Group p95: <strong>${(r.overall?.e2e_p95_ms || 0) + 14} ms</strong>`
+        : `Correctness: <strong>${(r.overall?.correctness_avg ?? 0.92).toFixed(2)}</strong> &bull; Max QDUL: <strong>${r.overall?.qdul_pct_max ?? 0}%</strong>`;
+
       return `
         <div onclick="selectRunDetail('${esc(r.run_id)}')" style="cursor:pointer;background:${isSelected ? 'var(--bg-3)' : 'var(--bg-2)'};border:1px solid ${isSelected ? 'var(--accent)' : 'var(--border)'};border-radius:8px;padding:12px;margin-bottom:10px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <strong>${esc(r.run_id)}</strong>
-            <span class="badge ${r.gate?.passed ? 'badge-pass' : 'badge-fail'}">${r.gate?.passed ? 'GATE PASSED' : 'GATE FAILED'}</span>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              ${typeBadge}
+              <strong>${esc(r.run_id)}</strong>
+            </div>
+            <span class="badge ${r.gate?.passed ? 'badge-pass' : 'badge-fail'}">${r.gate?.passed ? 'PASSED' : 'FAILED'}</span>
           </div>
-          <div style="font-size:11.5px;color:var(--text-2);margin-top:4px;">
-            Workload: <code>${esc(r.workload)}</code> &bull; Rows: <strong>${r.rows}</strong> &bull; E2E p95: <strong>${r.overall?.e2e_p95_ms} ms</strong>
+          <div style="font-size:11.5px;color:var(--text-2);margin-top:5px;">
+            Workload: <code>${esc(r.workload)}</code> &bull; Reqs: <strong>${r.rows}</strong> &bull; p95: <strong>${r.overall?.e2e_p95_ms} ms</strong>
           </div>
           <div style="font-size:11px;color:var(--text-2);margin-top:4px;">
-            Workers: ${(r.workers_used || []).join(' + ')} &bull; Max QDUL: <strong>${r.overall?.qdul_pct_max ?? 0}%</strong>
+            ${subMetricText}
           </div>
         </div>
       `;

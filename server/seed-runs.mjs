@@ -93,7 +93,13 @@ export function ensureSeedRuns(baseRoot = FRAMEWORK_ROOT) {
 
   for (const seed of seeds) {
     const runDir = path.join(resultsDir, seed.runId);
-    if (fs.existsSync(path.join(runDir, 'summary.json'))) continue;
+    const sumFile = path.join(runDir, 'summary.json');
+    if (fs.existsSync(sumFile)) {
+      try {
+        const existing = JSON.parse(fs.readFileSync(sumFile, 'utf8'));
+        if (existing.run_type && existing.k6_counters) continue;
+      } catch (_) {}
+    }
     fs.mkdirSync(runDir, { recursive: true });
 
     fs.writeFileSync(

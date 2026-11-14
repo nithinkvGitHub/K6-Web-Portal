@@ -575,25 +575,33 @@
             </div>
           </div>
 
-          <!-- Live Metric Cards -->
-          <div class="grid-4" style="margin-bottom:16px;">
+          <!-- Live Metric Cards (Dynamically Switches Between AI Agent Counters & Normal k6 Counters) -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--text-2);" id="liveCountersHeaderTitle">&#9889; Live Result Counters</span>
+            <div style="display:flex;gap:6px;">
+              <button type="button" id="btnLiveCounterK6" class="btn btn-secondary" style="padding:3px 9px;font-size:11px;" onclick="setLiveCounterMode('k6')">&#9889; Normal k6 Counters</button>
+              <button type="button" id="btnLiveCounterAi" class="btn btn-secondary" style="padding:3px 9px;font-size:11px;" onclick="setLiveCounterMode('ai')">&#129302; AI Agent Counters</button>
+            </div>
+          </div>
+
+          <div class="grid-4" style="margin-bottom:16px;" id="liveCountersGrid">
             <div class="stat-card">
-              <div class="stat-label">Completed Turns (`rows.jsonl`)</div>
+              <div class="stat-label" id="lblCounter1">Completed Turns (`rows.jsonl`)</div>
               <div class="stat-value" id="liveTotalRows">0</div>
               <div class="stat-sub" id="liveWorkerSplitSub">EC2-01: 0 | EC2-02: 0</div>
             </div>
             <div class="stat-card">
-              <div class="stat-label">Live E2E Latency (p95 / avg)</div>
+              <div class="stat-label" id="lblCounter2">Live E2E Latency (p95 / avg)</div>
               <div class="stat-value" id="liveE2eP95">-- ms</div>
               <div class="stat-sub" id="liveTtftSub">TTFT avg: -- ms</div>
             </div>
             <div class="stat-card">
-              <div class="stat-label">Completion / Det. Pass</div>
+              <div class="stat-label" id="lblCounter3">Completion / Det. Pass</div>
               <div class="stat-value" id="livePassRate">--%</div>
               <div class="stat-sub" id="liveErrorSub">HTTP 200 OK</div>
             </div>
             <div class="stat-card">
-              <div class="stat-label">Lexical Correctness / Grounded</div>
+              <div class="stat-label" id="lblCounter4">Lexical Correctness / Grounded</div>
               <div class="stat-value" id="liveQualityScore">--</div>
               <div class="stat-sub" id="liveStageTimingSub">Plan / Tools / Synth</div>
             </div>
@@ -661,6 +669,11 @@
             <div class="card-header">
               <h3 class="card-title">&#128193; `results/` Run History</h3>
               <button class="btn btn-secondary" style="padding:5px 10px;font-size:11px;" onclick="loadOverview()">&#8635; Refresh</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:12px;">
+              <button type="button" id="btnFilterRunsAll" class="btn btn-primary" style="padding:5px 8px;font-size:11px;" onclick="setRunHistoryFilter('all')">All Runs</button>
+              <button type="button" id="btnFilterRunsK6" class="btn btn-secondary" style="padding:5px 8px;font-size:11px;" onclick="setRunHistoryFilter('k6')">&#9889; Normal k6</button>
+              <button type="button" id="btnFilterRunsAi" class="btn btn-secondary" style="padding:5px 8px;font-size:11px;" onclick="setRunHistoryFilter('ai')">&#129302; AI Runs</button>
             </div>
             <div id="runsListContainer"></div>
           </div>

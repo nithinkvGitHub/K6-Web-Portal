@@ -18,6 +18,7 @@ import {
 } from '../demo-framework/tools/population-orchestrator.mjs';
 import { startWorkerAgent } from './worker-agent.mjs';
 import { ensureSeedRuns } from './seed-runs.mjs';
+import { buildK6ExportCsvFiles, createZipBuffer } from './k6-zip-exporter.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -485,6 +486,39 @@ async function startAllServices() {
           'Content-Disposition': `attachment; filename="${runId}-results.csv"`
         });
         res.end(csv);
+        return;
+      }
+
+      if (parts[3] === 'export-zip' || parts[3] === 'export-files') {
+        const summary = fs.existsSync(path.join(runDir, 'summary.json'))
+          ? JSON.parse(fs.readFileSync(path.join(runDir, 'summary.json'), 'utf8'))
+          : { run_id: runId };
+        const rows = fs.existsSync(path.join(runDir, 'rows.jsonl'))
+          ? fs
+              .readFileSync(path.join(runDir, 'rows.jsonl'), 'utf8')
+              .split('\n')
+              .filter((l) => l.trim().startsWith('{'))
+              .map((l) => {
+                try { return JSON.parse(l); } catch { return null; }
+              })
+              .filter(Boolean)
+          : [];
+
+        const csvFilesMap = buildK6ExportCsvFiles(summary, rows);
+
+        if (parts[3] === 'export-files') {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ run_id: runId, files: csvFilesMap }));
+          return;
+        }
+
+        const zipBuf = createZipBuffer(csvFilesMap);
+        res.writeHead(200, {
+          'Content-Type': 'application/zip',
+          'Content-Disposition': `attachment; filename="${runId}-k6-export.zip"`,
+          'Content-Length': zipBuf.length
+        });
+        res.end(zipBuf);
         return;
       }
 
