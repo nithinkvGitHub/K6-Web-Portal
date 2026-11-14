@@ -1,0 +1,87 @@
+{
+  "target": {
+    "name": "Mock AI Agent (Local Demo)",
+    "baseUrl": "http://127.0.0.1:8089",
+    "path": "/v1/chat/completions",
+    "method": "POST",
+    "timeoutMs": 60000,
+    "stream": true,
+    "streamEngine": "k6-http",
+    "model": "mock-agent-1",
+    "auth": { "type": "bearer", "envVar": "AGENT_API_KEY" },
+    "headers": {},
+    "request": {
+      "body": {
+        "model": "{{model}}",
+        "stream": "{{stream}}",
+        "session_id": "{{session_id}}",
+        "messages": "{{messages}}"
+      }
+    },
+    "response": {
+      "answerPath": "choices[0].message.content",
+      "streamDeltaPath": "choices[0].delta.content",
+      "promptTokensPath": "usage.prompt_tokens",
+      "completionTokensPath": "usage.completion_tokens",
+      "modelPath": "model",
+      "tracePath": "x_agent.trace_id",
+      "stepsPath": "x_agent.steps",
+      "toolCallsPath": "x_agent.tool_calls",
+      "toolNameKey": "name",
+      "contextsPath": "x_agent.contexts",
+      "citationsPath": "x_agent.citations",
+      "completionPath": "x_agent.status",
+      "completionOk": ["completed"],
+      "timingPaths": {
+        "planning": "x_agent.timings.planning_ms",
+        "tools": "x_agent.timings.tools_ms",
+        "synthesis": "x_agent.timings.synthesis_ms",
+        "total": "x_agent.timings.total_ms"
+      }
+    },
+    "cleanup": {
+      "method": "DELETE",
+      "path": "/sessions/{{session_id}}"
+    }
+  },
+  "datasets": ["data/golden.json", "data/adversarial.json"],
+  "variables": {
+    "client_id": { "csv": "data/vars/clients.csv", "column": "client_id", "mode": "sequential" }
+  },
+  "mix": {
+    "simple": 25,
+    "rag": 30,
+    "agent": 20,
+    "conversation": 10,
+    "adversarial": 5
+  },
+  "thinkTime": { "minSec": 0.5, "maxSec": 1.5 },
+  "checks": {
+    "citationRegex": "\\[doc:[^\\]]+\\]",
+    "refusalRegex": "(cannot|can't|violates safety|not assist)",
+    "loopStepLimit": 12
+  },
+  "pricing": { "inputPer1K": 0.003, "outputPer1K": 0.015 },
+  "reporting": {
+    "warmupSec": 2,
+    "warmupWorkloads": ["plateaus"],
+    "minSamples": 10,
+    "minPairs": 4,
+    "slo": {
+      "e2e_p95_ms": 5000,
+      "completion_rate": 0.98,
+      "deterministic_pass_rate": 0.95,
+      "qdul_pct_max": 10
+    }
+  },
+  "k6Thresholds": {
+    "agent_e2e_duration": ["p(95)<10000"],
+    "agent_completion_rate": ["rate>0.95"],
+    "deterministic_pass_rate": ["rate>0.90"]
+  },
+  "evaluation": {
+    "evaluators": ["lexical.mjs"],
+    "primary": "lexical",
+    "sampling": { "smoke": 1, "baseline": 1, "plateaus": 1, "load": 0.5 }
+  }
+}

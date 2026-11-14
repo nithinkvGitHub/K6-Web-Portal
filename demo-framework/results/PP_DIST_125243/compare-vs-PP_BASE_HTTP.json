@@ -1,0 +1,36 @@
+{
+  "reference_run": "PP_BASE_HTTP",
+  "candidate_run": "PP_DIST_125243",
+  "compared_at": "2026-11-14T07:24:56.770Z",
+  "passed": false,
+  "checks": [
+    {
+      "metric": "E2E Latency p95",
+      "reference": "822 ms",
+      "candidate": "1384 ms",
+      "delta": "+68.37%",
+      "verdict": "REGRESSION"
+    },
+    {
+      "metric": "Completion Rate",
+      "reference": "100.0%",
+      "candidate": "100.0%",
+      "delta": "0 pp",
+      "verdict": "PASS"
+    },
+    {
+      "metric": "Deterministic Pass Rate",
+      "reference": "100.0%",
+      "candidate": "83.3%",
+      "delta": "-16.67 pp",
+      "verdict": "REGRESSION"
+    },
+    {
+      "metric": "Lexical Correctness Score",
+      "reference": "1.000",
+      "candidate": "0.833",
+      "delta": "-0.167",
+      "verdict": "REGRESSION"
+    }
+  ]
+}

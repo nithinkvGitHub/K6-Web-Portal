@@ -1,0 +1,20 @@
+{
+  "run_id": "PP_DIST_135607",
+  "workload": "plateaus",
+  "config_file": "config/perfpilot.json",
+  "gates_file": "config/gates.perfpilot.json",
+  "started_at": "2026-11-14T08:26:07.548Z",
+  "workers_used": [
+    "EC2-Worker-01",
+    "EC2-Worker-02"
+  ],
+  "execution_mode": "split-50-50",
+  "k6": "v2.3.0 (distributed segment mode)",
+  "target": {
+    "name": "PerfPilot Agent (HTTP JSON)",
+    "baseUrl": "http://127.0.0.1:8089",
+    "path": "/modules/agent_mcp_bridge/api/agent",
+    "model": "perfpilot-v2",
+    "stream": false
+  }
+}

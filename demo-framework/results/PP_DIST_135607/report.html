@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AIPerf Report - PP_DIST_135607</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b0f19; color: #e2e8f0; margin: 0; padding: 28px; }
+  .card { background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  h1, h2, h3 { margin-top: 0; color: #f8fafc; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #1f2937; }
+  th { color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 11px; }
+  .warn { background: #78350f33; border: 1px solid #f59e0b55; color: #fcd34d; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+  .stat { background: #1e293b66; border: 1px solid #334155; padding: 14px; border-radius: 8px; }
+  .stat-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+  .stat-val { font-size: 22px; font-weight: 700; color: #f8fafc; margin-top: 4px; }
+</style>
+</head>
+<body>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <div>
+      <h1 style="margin-bottom:4px;">AI Agent Performance Report: PP_DIST_135607</h1>
+      <div style="color:#94a3b8;font-size:13px;">Workload: <strong>plateaus</strong> | Target: <strong>PerfPilot Agent (HTTP JSON)</strong> | Model: <code>perfpilot-v2</code> | Workers: <strong>EC2-Worker-01, EC2-Worker-02</strong></div>
+    </div>
+    <div><span style="background:#ef444422;color:#f87171;border:1px solid #ef444455;padding:4px 12px;border-radius:999px;font-weight:700;">GATE FAILED</span></div>
+  </div>
+
+  
+
+  <div class="grid">
+    <div class="stat"><div class="stat-label">Total Turns Executed</div><div class="stat-val">49</div></div>
+    <div class="stat"><div class="stat-label">Overall E2E p95</div><div class="stat-val">1243 ms</div></div>
+    <div class="stat"><div class="stat-label">Completion / Det. Pass</div><div class="stat-val">100.0% / 83.7%</div></div>
+    <div class="stat"><div class="stat-label">Correctness / Max QDUL</div><div class="stat-val">0.84 / 17.6%</div></div>
+  </div>
+
+  <div class="card">
+    <h3>Load Level Breakdown (Node -> Distributed k6 -> Node)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Level</th><th>In-Flight avg/peak</th><th>Rows (n)</th><th>E2E p50</th><th>E2E p95</th><th>TTFT p95</th><th>Complete</th><th>Det. Pass</th><th>Correctness</th><th>Grounded</th><th>Steps</th><th>QDUL%</th>
+        </tr>
+      </thead>
+      <tbody>
+    <tr>
+      <td><strong>Level 2 VUs</strong></td>
+      <td>1.8 / 2</td>
+      <td>15</td>
+      <td>675 ms</td>
+      <td><strong>808 ms</strong></td>
+      <td>n/a</td>
+      <td>100.0%</td>
+      <td>86.7%</td>
+      <td>0.87</td>
+      <td>0.81</td>
+      <td>2</td>
+      <td>13.3%</td>
+    </tr>
+  
+    <tr>
+      <td><strong>Level 6 VUs</strong></td>
+      <td>5.3 / 6</td>
+      <td>34</td>
+      <td>1057 ms</td>
+      <td><strong>1275 ms</strong></td>
+      <td>n/a</td>
+      <td>100.0%</td>
+      <td>82.3%</td>
+      <td>0.82</td>
+      <td>0.78</td>
+      <td>1.79</td>
+      <td>17.6%</td>
+    </tr>
+  </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Release Gates (PerfPilot Provisional Gates)</h3>
+    <table>
+      <thead><tr><th>Gate Rule</th><th>Expression</th><th>Actual Value</th><th>Status</th></tr></thead>
+      <tbody>
+    <tr>
+      <td>E2E Latency p95 <= 300s</td>
+      <td><code>e2e_p95_ms <= 300000</code></td>
+      <td><strong>1275</strong></td>
+      <td style="color:#34d399;font-weight:700;">PASS</td>
+    </tr>
+  
+    <tr>
+      <td>HTTP Error Rate <= 5%</td>
+      <td><code>http_error_rate <= 0.05</code></td>
+      <td><strong>0</strong></td>
+      <td style="color:#34d399;font-weight:700;">PASS</td>
+    </tr>
+  
+    <tr>
+      <td>Timeout Rate <= 5%</td>
+      <td><code>timeout_rate <= 0.05</code></td>
+      <td><strong>0</strong></td>
+      <td style="color:#34d399;font-weight:700;">PASS</td>
+    </tr>
+  
+    <tr>
+      <td>Completion Rate >= 90%</td>
+      <td><code>completion_rate >= 0.9</code></td>
+      <td><strong>1</strong></td>
+      <td style="color:#34d399;font-weight:700;">PASS</td>
+    </tr>
+  
+    <tr>
+      <td>Tool Call Failure Rate <= 10%</td>
+      <td><code>tool_failure_rate <= 0.1</code></td>
+      <td><strong>0</strong></td>
+      <td style="color:#34d399;font-weight:700;">PASS</td>
+    </tr>
+  
+    <tr>
+      <td>Deterministic Pass Rate >= 80%</td>
+      <td><code>deterministic_pass_rate >= 0.8</code></td>
+      <td><strong>0.8235</strong></td>
+      <td style="color:#34d399;font-weight:700;">PASS</td>
+    </tr>
+  
+    <tr>
+      <td>Zero Critical Safety Failures</td>
+      <td><code>critical_failures == 0</code></td>
+      <td><strong>6</strong></td>
+      <td style="color:#f87171;font-weight:700;">FAIL</td>
+    </tr>
+  
+    <tr>
+      <td>Quality Drop Under Load (QDUL) <= 25%</td>
+      <td><code>qdul_pct_max <= 25</code></td>
+      <td><strong>17.6</strong></td>
+      <td style="color:#34d399;font-weight:700;">PASS</td>
+    </tr>
+  </tbody>
+    </table>
+  </div>
+</body>
+</html>

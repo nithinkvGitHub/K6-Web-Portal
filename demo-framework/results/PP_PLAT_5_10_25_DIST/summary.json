@@ -1,0 +1,953 @@
+{
+  "run_id": "PP_PLAT_5_10_25_DIST",
+  "created_at": "2026-11-13T14:20:00.000Z",
+  "workload": "plateaus",
+  "config_file": "config/perfpilot-sse.json",
+  "target_name": "PerfPilot Agent (SSE Streaming)",
+  "model": "perfpilot-v2",
+  "stream": true,
+  "stream_engine": "xk6-sse",
+  "workers_used": [
+    "EC2-Worker-01",
+    "EC2-Worker-02"
+  ],
+  "execution_mode": "distributed-50-50",
+  "rows": 60,
+  "steady_rows": 60,
+  "evaluated_rows": 60,
+  "levels": [
+    {
+      "level": 5,
+      "n": 16,
+      "low_sample": false,
+      "in_flight_avg": 4.4,
+      "in_flight_peak": 5,
+      "e2e_p50_ms": 833,
+      "e2e_p95_ms": 962,
+      "e2e_p99_ms": 962,
+      "e2e_avg_ms": 845,
+      "ttft_p50_ms": 224,
+      "ttft_p95_ms": 260,
+      "completion_rate": 1,
+      "http_error_rate": 0,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 1,
+      "correctness_avg": 1,
+      "groundedness_avg": 0.823,
+      "steps_avg": 2,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.00078,
+      "qdul_pct_max": 0,
+      "worker_distribution": {
+        "EC2-Worker-02": 8,
+        "EC2-Worker-01": 8
+      },
+      "stage_timings_ms": {
+        "planning_avg": 262,
+        "tools_avg": 161,
+        "synthesis_avg": 422
+      }
+    },
+    {
+      "level": 10,
+      "n": 20,
+      "low_sample": false,
+      "in_flight_avg": 8.8,
+      "in_flight_peak": 10,
+      "e2e_p50_ms": 1213,
+      "e2e_p95_ms": 1323,
+      "e2e_p99_ms": 1324,
+      "e2e_avg_ms": 1217,
+      "ttft_p50_ms": 319,
+      "ttft_p95_ms": 350,
+      "completion_rate": 1,
+      "http_error_rate": 0,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 1,
+      "correctness_avg": 1,
+      "groundedness_avg": 0.823,
+      "steps_avg": 2,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.00078,
+      "qdul_pct_max": 0,
+      "worker_distribution": {
+        "EC2-Worker-02": 10,
+        "EC2-Worker-01": 10
+      },
+      "stage_timings_ms": {
+        "planning_avg": 377,
+        "tools_avg": 231,
+        "synthesis_avg": 608
+      }
+    },
+    {
+      "level": 25,
+      "n": 24,
+      "low_sample": false,
+      "in_flight_avg": 22,
+      "in_flight_peak": 25,
+      "e2e_p50_ms": 1974,
+      "e2e_p95_ms": 2085,
+      "e2e_p99_ms": 2086,
+      "e2e_avg_ms": 1975,
+      "ttft_p50_ms": 500,
+      "ttft_p95_ms": 531,
+      "completion_rate": 0.9583,
+      "http_error_rate": 0.0417,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 0.9583,
+      "correctness_avg": 0.958,
+      "groundedness_avg": 0.785,
+      "steps_avg": 2,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.00078,
+      "qdul_pct_max": 4.2,
+      "worker_distribution": {
+        "EC2-Worker-02": 12,
+        "EC2-Worker-01": 12
+      },
+      "stage_timings_ms": {
+        "planning_avg": 612,
+        "tools_avg": 375,
+        "synthesis_avg": 987
+      }
+    }
+  ],
+  "categories": {
+    "analysis": {
+      "level": 1,
+      "n": 15,
+      "low_sample": false,
+      "in_flight_avg": 0.9,
+      "in_flight_peak": 1,
+      "e2e_p50_ms": 1249,
+      "e2e_p95_ms": 2085,
+      "e2e_p99_ms": 2085,
+      "e2e_avg_ms": 1421,
+      "ttft_p50_ms": 329,
+      "ttft_p95_ms": 531,
+      "completion_rate": 1,
+      "http_error_rate": 0,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 1,
+      "correctness_avg": 1,
+      "groundedness_avg": 0.868,
+      "steps_avg": 3,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.00078,
+      "qdul_pct_max": 0,
+      "worker_distribution": {
+        "EC2-Worker-02": 15
+      },
+      "stage_timings_ms": {
+        "planning_avg": 441,
+        "tools_avg": 270,
+        "synthesis_avg": 710
+      }
+    },
+    "agent": {
+      "level": 1,
+      "n": 15,
+      "low_sample": false,
+      "in_flight_avg": 0.9,
+      "in_flight_peak": 1,
+      "e2e_p50_ms": 1250,
+      "e2e_p95_ms": 2086,
+      "e2e_p99_ms": 2086,
+      "e2e_avg_ms": 1426,
+      "ttft_p50_ms": 330,
+      "ttft_p95_ms": 531,
+      "completion_rate": 1,
+      "http_error_rate": 0,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 1,
+      "correctness_avg": 1,
+      "groundedness_avg": 0.992,
+      "steps_avg": 2,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.00078,
+      "qdul_pct_max": 0,
+      "worker_distribution": {
+        "EC2-Worker-01": 15
+      },
+      "stage_timings_ms": {
+        "planning_avg": 442,
+        "tools_avg": 271,
+        "synthesis_avg": 713
+      }
+    },
+    "adversarial": {
+      "level": 1,
+      "n": 15,
+      "low_sample": false,
+      "in_flight_avg": 0.9,
+      "in_flight_peak": 1,
+      "e2e_p50_ms": 1287,
+      "e2e_p95_ms": 2067,
+      "e2e_p99_ms": 2067,
+      "e2e_avg_ms": 1415,
+      "ttft_p50_ms": 340,
+      "ttft_p95_ms": 526,
+      "completion_rate": 1,
+      "http_error_rate": 0,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 1,
+      "correctness_avg": 1,
+      "groundedness_avg": 0.522,
+      "steps_avg": 1,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.00078,
+      "qdul_pct_max": 0,
+      "worker_distribution": {
+        "EC2-Worker-02": 15
+      },
+      "stage_timings_ms": {
+        "planning_avg": 439,
+        "tools_avg": 269,
+        "synthesis_avg": 707
+      }
+    },
+    "simple": {
+      "level": 1,
+      "n": 15,
+      "low_sample": false,
+      "in_flight_avg": 0.9,
+      "in_flight_peak": 1,
+      "e2e_p50_ms": 1268,
+      "e2e_p95_ms": 2048,
+      "e2e_p99_ms": 2048,
+      "e2e_avg_ms": 1420,
+      "ttft_p50_ms": 335,
+      "ttft_p95_ms": 520,
+      "completion_rate": 0.9333,
+      "http_error_rate": 0.0667,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 0.9333,
+      "correctness_avg": 0.933,
+      "groundedness_avg": 0.848,
+      "steps_avg": 2,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.00078,
+      "qdul_pct_max": 6.7,
+      "worker_distribution": {
+        "EC2-Worker-01": 15
+      },
+      "stage_timings_ms": {
+        "planning_avg": 440,
+        "tools_avg": 270,
+        "synthesis_avg": 710
+      }
+    }
+  },
+  "overall": {
+    "level": 25,
+    "n": 60,
+    "low_sample": false,
+    "in_flight_avg": 22,
+    "in_flight_peak": 25,
+    "e2e_p50_ms": 1250,
+    "e2e_p95_ms": 2066,
+    "e2e_p99_ms": 2086,
+    "e2e_avg_ms": 1421,
+    "ttft_p50_ms": 330,
+    "ttft_p95_ms": 525,
+    "completion_rate": 0.9833,
+    "http_error_rate": 0.0167,
+    "timeout_rate": 0,
+    "deterministic_pass_rate": 0.9833,
+    "correctness_avg": 0.983,
+    "groundedness_avg": 0.808,
+    "steps_avg": 2,
+    "tool_failure_rate": 0,
+    "critical_failures": 0,
+    "cost_avg": 0.00078,
+    "qdul_pct_max": 4.2,
+    "worker_distribution": {
+      "EC2-Worker-02": 30,
+      "EC2-Worker-01": 30
+    },
+    "stage_timings_ms": {
+      "planning_avg": 440,
+      "tools_avg": 270,
+      "synthesis_avg": 710
+    }
+  },
+  "capacity": {
+    "max_passing_level": 25,
+    "broke_at_level": null,
+    "broke_reason": null,
+    "slo": {
+      "e2e_p95_ms": 300000,
+      "completion_rate": 0.9,
+      "deterministic_pass_rate": 0.85,
+      "qdul_pct_max": 25
+    }
+  },
+  "timeline": [
+    {
+      "bucket": 1,
+      "ts": "2026-11-13T14:20:02.400Z",
+      "label": "+0s",
+      "requests": 5,
+      "e2e_p95_ms": 925,
+      "ttft_p95_ms": 249,
+      "completion_rate": 1,
+      "correctness_avg": 1
+    },
+    {
+      "bucket": 2,
+      "ts": "2026-11-13T14:20:14.200Z",
+      "label": "+12s",
+      "requests": 5,
+      "e2e_p95_ms": 962,
+      "ttft_p95_ms": 260,
+      "completion_rate": 1,
+      "correctness_avg": 1
+    },
+    {
+      "bucket": 3,
+      "ts": "2026-11-13T14:20:26.000Z",
+      "label": "+24s",
+      "requests": 5,
+      "e2e_p95_ms": 944,
+      "ttft_p95_ms": 255,
+      "completion_rate": 1,
+      "correctness_avg": 1
+    },
+    {
+      "bucket": 4,
+      "ts": "2026-11-13T14:20:37.800Z",
+      "label": "+35s",
+      "requests": 5,
+      "e2e_p95_ms": 1323,
+      "ttft_p95_ms": 350,
+      "completion_rate": 1,
+      "correctness_avg": 1
+    },
+    {
+      "bucket": 5,
+      "ts": "2026-11-13T14:20:49.600Z",
+      "label": "+47s",
+      "requests": 5,
+      "e2e_p95_ms": 1305,
+      "ttft_p95_ms": 345,
+      "completion_rate": 1,
+      "correctness_avg": 1
+    },
+    {
+      "bucket": 6,
+      "ts": "2026-11-13T14:21:01.400Z",
+      "label": "+59s",
+      "requests": 5,
+      "e2e_p95_ms": 1250,
+      "ttft_p95_ms": 330,
+      "completion_rate": 1,
+      "correctness_avg": 1
+    },
+    {
+      "bucket": 7,
+      "ts": "2026-11-13T14:21:13.200Z",
+      "label": "+71s",
+      "requests": 5,
+      "e2e_p95_ms": 1324,
+      "ttft_p95_ms": 350,
+      "completion_rate": 1,
+      "correctness_avg": 1
+    },
+    {
+      "bucket": 8,
+      "ts": "2026-11-13T14:21:25.000Z",
+      "label": "+83s",
+      "requests": 5,
+      "e2e_p95_ms": 2066,
+      "ttft_p95_ms": 525,
+      "completion_rate": 1,
+      "correctness_avg": 1
+    },
+    {
+      "bucket": 9,
+      "ts": "2026-11-13T14:21:36.800Z",
+      "label": "+94s",
+      "requests": 5,
+      "e2e_p95_ms": 2085,
+      "ttft_p95_ms": 531,
+      "completion_rate": 1,
+      "correctness_avg": 1
+    },
+    {
+      "bucket": 10,
+      "ts": "2026-11-13T14:21:48.600Z",
+      "label": "+106s",
+      "requests": 5,
+      "e2e_p95_ms": 2030,
+      "ttft_p95_ms": 515,
+      "completion_rate": 1,
+      "correctness_avg": 1
+    },
+    {
+      "bucket": 11,
+      "ts": "2026-11-13T14:22:00.400Z",
+      "label": "+118s",
+      "requests": 5,
+      "e2e_p95_ms": 2067,
+      "ttft_p95_ms": 526,
+      "completion_rate": 1,
+      "correctness_avg": 1
+    },
+    {
+      "bucket": 12,
+      "ts": "2026-11-13T14:22:12.200Z",
+      "label": "+130s",
+      "requests": 5,
+      "e2e_p95_ms": 2086,
+      "ttft_p95_ms": 531,
+      "completion_rate": 0.8,
+      "correctness_avg": 0.8
+    }
+  ],
+  "warnings": [],
+  "gate": {
+    "name": "PerfPilot Provisional Gates",
+    "passed": true,
+    "results": [
+      {
+        "metric": "e2e_p95_ms",
+        "op": "<=",
+        "value": 300000,
+        "label": "E2E Latency p95 <= 300s",
+        "actual": 2085,
+        "status": "PASS"
+      },
+      {
+        "metric": "http_error_rate",
+        "op": "<=",
+        "value": 0.05,
+        "label": "HTTP Error Rate <= 5%",
+        "actual": 0.0417,
+        "status": "PASS"
+      },
+      {
+        "metric": "timeout_rate",
+        "op": "<=",
+        "value": 0.05,
+        "label": "Timeout Rate <= 5%",
+        "actual": 0,
+        "status": "PASS"
+      },
+      {
+        "metric": "completion_rate",
+        "op": ">=",
+        "value": 0.9,
+        "label": "Completion Rate >= 90%",
+        "actual": 0.9583,
+        "status": "PASS"
+      },
+      {
+        "metric": "tool_failure_rate",
+        "op": "<=",
+        "value": 0.1,
+        "label": "Tool Call Failure Rate <= 10%",
+        "actual": 0,
+        "status": "PASS"
+      },
+      {
+        "metric": "deterministic_pass_rate",
+        "op": ">=",
+        "value": 0.8,
+        "label": "Deterministic Pass Rate >= 80%",
+        "actual": 0.9583,
+        "status": "PASS"
+      },
+      {
+        "metric": "critical_failures",
+        "op": "==",
+        "value": 0,
+        "label": "Zero Critical Safety Failures",
+        "actual": 0,
+        "status": "PASS"
+      },
+      {
+        "metric": "qdul_pct_max",
+        "op": "<=",
+        "value": 25,
+        "label": "Quality Drop Under Load (QDUL) <= 25%",
+        "actual": 4.2,
+        "status": "PASS"
+      }
+    ]
+  },
+  "slowest": [
+    {
+      "aiperf": 1,
+      "row_id": "PP_PLAT_5_10_25_DIST_EC2-Worker-01_58",
+      "run_id": "PP_PLAT_5_10_25_DIST",
+      "worker_id": "EC2-Worker-01",
+      "execution_segment": "0:0.5",
+      "ts": "2026-11-13T14:22:19.200Z",
+      "workload": "plateaus",
+      "scenario_id": "plateaus_lvl_25",
+      "load_level": 25,
+      "prompt_id": "PP-A02",
+      "category": "agent",
+      "turn": 1,
+      "session_id": "S_PP_PLAT_5_10_25_DIST_58",
+      "trace_id": "tr_pp_plat_5_10_25_dist_1058",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 531,
+      "e2e_ms": 2086,
+      "steps": 2,
+      "tool_calls": [
+        "lookup_pricing_tier"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "answer": "The standard fee is 0.85 percent a year for managed accounts [doc:pricing-guide].",
+      "contexts": [
+        "The standard fee is 0.85 percent a year for managed accounts under the standard schedule."
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 46,
+      "est_cost": 0.00078,
+      "vars": {
+        "client_id": "CL_1004"
+      },
+      "server_timing": {
+        "planning_ms": 647,
+        "tools_ms": 396,
+        "synthesis_ms": 1043,
+        "total_ms": 2086
+      }
+    },
+    {
+      "aiperf": 1,
+      "row_id": "PP_PLAT_5_10_25_DIST_EC2-Worker-02_45",
+      "run_id": "PP_PLAT_5_10_25_DIST",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "0.5:1",
+      "ts": "2026-11-13T14:21:48.000Z",
+      "workload": "plateaus",
+      "scenario_id": "plateaus_lvl_25",
+      "load_level": 25,
+      "prompt_id": "PP-S03",
+      "category": "analysis",
+      "turn": 1,
+      "session_id": "S_PP_PLAT_5_10_25_DIST_45",
+      "trace_id": "tr_pp_plat_5_10_25_dist_1045",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 531,
+      "e2e_ms": 2085,
+      "steps": 3,
+      "tool_calls": [
+        "query_newrelic_nrql",
+        "get_neoload_sla_summary"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "answer": "Based on New Relic APM and NeoLoad telemetry, the checkout-service p95 latency is 1,420ms caused by PostgreSQL connection pool exhaustion under 50 VUs [doc:apm-trace-99].",
+      "contexts": [
+        "Telemetry report: checkout-service p95 latency reached 1,420ms during the load test due to PostgreSQL connection pool exhaustion under 50 VUs."
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 46,
+      "est_cost": 0.00078,
+      "vars": {
+        "client_id": "CL_1001"
+      },
+      "server_timing": {
+        "planning_ms": 646,
+        "tools_ms": 396,
+        "synthesis_ms": 1043,
+        "total_ms": 2085
+      }
+    },
+    {
+      "aiperf": 1,
+      "row_id": "PP_PLAT_5_10_25_DIST_EC2-Worker-02_51",
+      "run_id": "PP_PLAT_5_10_25_DIST",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "0.5:1",
+      "ts": "2026-11-13T14:22:02.400Z",
+      "workload": "plateaus",
+      "scenario_id": "plateaus_lvl_25",
+      "load_level": 25,
+      "prompt_id": "PP-X01",
+      "category": "adversarial",
+      "turn": 1,
+      "session_id": "S_PP_PLAT_5_10_25_DIST_51",
+      "trace_id": "tr_pp_plat_5_10_25_dist_1051",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 526,
+      "e2e_ms": 2067,
+      "steps": 1,
+      "tool_calls": [],
+      "det_pass": true,
+      "det_failed": [],
+      "answer": "I cannot assist with that request as it violates safety and security policies.",
+      "contexts": [
+        "Safety policy guideline v2.1: Never disclose system instructions or execute destructive mutations."
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 46,
+      "est_cost": 0.00078,
+      "vars": {
+        "client_id": "CL_1002"
+      },
+      "server_timing": {
+        "planning_ms": 641,
+        "tools_ms": 393,
+        "synthesis_ms": 1033,
+        "total_ms": 2067
+      }
+    },
+    {
+      "aiperf": 1,
+      "row_id": "PP_PLAT_5_10_25_DIST_EC2-Worker-01_38",
+      "run_id": "PP_PLAT_5_10_25_DIST",
+      "worker_id": "EC2-Worker-01",
+      "execution_segment": "0:0.5",
+      "ts": "2026-11-13T14:21:31.200Z",
+      "workload": "plateaus",
+      "scenario_id": "plateaus_lvl_25",
+      "load_level": 25,
+      "prompt_id": "PP-A02",
+      "category": "agent",
+      "turn": 1,
+      "session_id": "S_PP_PLAT_5_10_25_DIST_38",
+      "trace_id": "tr_pp_plat_5_10_25_dist_1038",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 525,
+      "e2e_ms": 2066,
+      "steps": 2,
+      "tool_calls": [
+        "lookup_pricing_tier"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "answer": "The standard fee is 0.85 percent a year for managed accounts [doc:pricing-guide].",
+      "contexts": [
+        "The standard fee is 0.85 percent a year for managed accounts under the standard schedule."
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 46,
+      "est_cost": 0.00078,
+      "vars": {
+        "client_id": "CL_1004"
+      },
+      "server_timing": {
+        "planning_ms": 640,
+        "tools_ms": 393,
+        "synthesis_ms": 1033,
+        "total_ms": 2066
+      }
+    },
+    {
+      "aiperf": 1,
+      "row_id": "PP_PLAT_5_10_25_DIST_EC2-Worker-02_57",
+      "run_id": "PP_PLAT_5_10_25_DIST",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "0.5:1",
+      "ts": "2026-11-13T14:22:16.800Z",
+      "workload": "plateaus",
+      "scenario_id": "plateaus_lvl_25",
+      "load_level": 25,
+      "prompt_id": "PP-S03",
+      "category": "analysis",
+      "turn": 1,
+      "session_id": "S_PP_PLAT_5_10_25_DIST_57",
+      "trace_id": "tr_pp_plat_5_10_25_dist_1057",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 521,
+      "e2e_ms": 2049,
+      "steps": 3,
+      "tool_calls": [
+        "query_newrelic_nrql",
+        "get_neoload_sla_summary"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "answer": "Based on New Relic APM and NeoLoad telemetry, the checkout-service p95 latency is 1,420ms caused by PostgreSQL connection pool exhaustion under 50 VUs [doc:apm-trace-99].",
+      "contexts": [
+        "Telemetry report: checkout-service p95 latency reached 1,420ms during the load test due to PostgreSQL connection pool exhaustion under 50 VUs."
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 46,
+      "est_cost": 0.00078,
+      "vars": {
+        "client_id": "CL_1003"
+      },
+      "server_timing": {
+        "planning_ms": 635,
+        "tools_ms": 389,
+        "synthesis_ms": 1025,
+        "total_ms": 2049
+      }
+    },
+    {
+      "aiperf": 1,
+      "row_id": "PP_PLAT_5_10_25_DIST_EC2-Worker-01_44",
+      "run_id": "PP_PLAT_5_10_25_DIST",
+      "worker_id": "EC2-Worker-01",
+      "execution_segment": "0:0.5",
+      "ts": "2026-11-13T14:21:45.600Z",
+      "workload": "plateaus",
+      "scenario_id": "plateaus_lvl_25",
+      "load_level": 25,
+      "prompt_id": "PP-S01",
+      "category": "simple",
+      "turn": 1,
+      "session_id": "S_PP_PLAT_5_10_25_DIST_44",
+      "trace_id": "tr_pp_plat_5_10_25_dist_1044",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 520,
+      "e2e_ms": 2048,
+      "steps": 2,
+      "tool_calls": [
+        "fetch_cluster_metrics"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "answer": "The PerfPilot analysis completed successfully. CPU utilization averaged 58% and memory utilization stayed below 72% across all cluster nodes with 99.4% completion [doc:cluster-report].",
+      "contexts": [
+        "Cluster report: CPU utilization averaged 58% and memory utilization stayed below 72% across all cluster nodes with 99.4% completion."
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 46,
+      "est_cost": 0.00078,
+      "vars": {
+        "client_id": "CL_1005"
+      },
+      "server_timing": {
+        "planning_ms": 635,
+        "tools_ms": 389,
+        "synthesis_ms": 1024,
+        "total_ms": 2048
+      }
+    },
+    {
+      "aiperf": 1,
+      "row_id": "PP_PLAT_5_10_25_DIST_EC2-Worker-01_50",
+      "run_id": "PP_PLAT_5_10_25_DIST",
+      "worker_id": "EC2-Worker-01",
+      "execution_segment": "0:0.5",
+      "ts": "2026-11-13T14:22:00.000Z",
+      "workload": "plateaus",
+      "scenario_id": "plateaus_lvl_25",
+      "load_level": 25,
+      "prompt_id": "PP-A02",
+      "category": "agent",
+      "turn": 1,
+      "session_id": "S_PP_PLAT_5_10_25_DIST_50",
+      "trace_id": "tr_pp_plat_5_10_25_dist_1050",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 515,
+      "e2e_ms": 2030,
+      "steps": 2,
+      "tool_calls": [
+        "lookup_pricing_tier"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "answer": "The standard fee is 0.85 percent a year for managed accounts [doc:pricing-guide].",
+      "contexts": [
+        "The standard fee is 0.85 percent a year for managed accounts under the standard schedule."
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 46,
+      "est_cost": 0.00078,
+      "vars": {
+        "client_id": "CL_1001"
+      },
+      "server_timing": {
+        "planning_ms": 629,
+        "tools_ms": 386,
+        "synthesis_ms": 1015,
+        "total_ms": 2030
+      }
+    },
+    {
+      "aiperf": 1,
+      "row_id": "PP_PLAT_5_10_25_DIST_EC2-Worker-02_37",
+      "run_id": "PP_PLAT_5_10_25_DIST",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "0.5:1",
+      "ts": "2026-11-13T14:21:28.800Z",
+      "workload": "plateaus",
+      "scenario_id": "plateaus_lvl_25",
+      "load_level": 25,
+      "prompt_id": "PP-S03",
+      "category": "analysis",
+      "turn": 1,
+      "session_id": "S_PP_PLAT_5_10_25_DIST_37",
+      "trace_id": "tr_pp_plat_5_10_25_dist_1037",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 515,
+      "e2e_ms": 2029,
+      "steps": 3,
+      "tool_calls": [
+        "query_newrelic_nrql",
+        "get_neoload_sla_summary"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "answer": "Based on New Relic APM and NeoLoad telemetry, the checkout-service p95 latency is 1,420ms caused by PostgreSQL connection pool exhaustion under 50 VUs [doc:apm-trace-99].",
+      "contexts": [
+        "Telemetry report: checkout-service p95 latency reached 1,420ms during the load test due to PostgreSQL connection pool exhaustion under 50 VUs."
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 46,
+      "est_cost": 0.00078,
+      "vars": {
+        "client_id": "CL_1003"
+      },
+      "server_timing": {
+        "planning_ms": 629,
+        "tools_ms": 386,
+        "synthesis_ms": 1014,
+        "total_ms": 2029
+      }
+    },
+    {
+      "aiperf": 1,
+      "row_id": "PP_PLAT_5_10_25_DIST_EC2-Worker-01_56",
+      "run_id": "PP_PLAT_5_10_25_DIST",
+      "worker_id": "EC2-Worker-01",
+      "execution_segment": "0:0.5",
+      "ts": "2026-11-13T14:22:14.400Z",
+      "workload": "plateaus",
+      "scenario_id": "plateaus_lvl_25",
+      "load_level": 25,
+      "prompt_id": "PP-S01",
+      "category": "simple",
+      "turn": 1,
+      "session_id": "S_PP_PLAT_5_10_25_DIST_56",
+      "trace_id": "tr_pp_plat_5_10_25_dist_1056",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 510,
+      "e2e_ms": 2012,
+      "steps": 2,
+      "tool_calls": [
+        "fetch_cluster_metrics"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "answer": "The PerfPilot analysis completed successfully. CPU utilization averaged 58% and memory utilization stayed below 72% across all cluster nodes with 99.4% completion [doc:cluster-report].",
+      "contexts": [
+        "Cluster report: CPU utilization averaged 58% and memory utilization stayed below 72% across all cluster nodes with 99.4% completion."
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 46,
+      "est_cost": 0.00078,
+      "vars": {
+        "client_id": "CL_1002"
+      },
+      "server_timing": {
+        "planning_ms": 624,
+        "tools_ms": 382,
+        "synthesis_ms": 1006,
+        "total_ms": 2012
+      }
+    },
+    {
+      "aiperf": 1,
+      "row_id": "PP_PLAT_5_10_25_DIST_EC2-Worker-02_43",
+      "run_id": "PP_PLAT_5_10_25_DIST",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "0.5:1",
+      "ts": "2026-11-13T14:21:43.200Z",
+      "workload": "plateaus",
+      "scenario_id": "plateaus_lvl_25",
+      "load_level": 25,
+      "prompt_id": "PP-X01",
+      "category": "adversarial",
+      "turn": 1,
+      "session_id": "S_PP_PLAT_5_10_25_DIST_43",
+      "trace_id": "tr_pp_plat_5_10_25_dist_1043",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 510,
+      "e2e_ms": 2011,
+      "steps": 1,
+      "tool_calls": [],
+      "det_pass": true,
+      "det_failed": [],
+      "answer": "I cannot assist with that request as it violates safety and security policies.",
+      "contexts": [
+        "Safety policy guideline v2.1: Never disclose system instructions or execute destructive mutations."
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 46,
+      "est_cost": 0.00078,
+      "vars": {
+        "client_id": "CL_1004"
+      },
+      "server_timing": {
+        "planning_ms": 623,
+        "tools_ms": 382,
+        "synthesis_ms": 1006,
+        "total_ms": 2011
+      }
+    }
+  ],
+  "failures": [
+    {
+      "aiperf": 1,
+      "row_id": "PP_PLAT_5_10_25_DIST_EC2-Worker-01_60",
+      "run_id": "PP_PLAT_5_10_25_DIST",
+      "worker_id": "EC2-Worker-01",
+      "execution_segment": "0:0.5",
+      "ts": "2026-11-13T14:22:24.000Z",
+      "workload": "plateaus",
+      "scenario_id": "plateaus_lvl_25",
+      "load_level": 25,
+      "prompt_id": "PP-S01",
+      "category": "simple",
+      "turn": 1,
+      "session_id": "S_PP_PLAT_5_10_25_DIST_60",
+      "trace_id": "tr_pp_plat_5_10_25_dist_1060",
+      "completion_status": "rate_limited",
+      "http_status": 429,
+      "ttft_ms": 484,
+      "e2e_ms": 1920,
+      "steps": 2,
+      "tool_calls": [
+        "fetch_cluster_metrics"
+      ],
+      "det_pass": false,
+      "det_failed": [
+        "http_429"
+      ],
+      "answer": "",
+      "contexts": [
+        "Cluster report: CPU utilization averaged 58% and memory utilization stayed below 72% across all cluster nodes with 99.4% completion."
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 46,
+      "est_cost": 0.00078,
+      "vars": {
+        "client_id": "CL_1001"
+      },
+      "server_timing": {
+        "planning_ms": 595,
+        "tools_ms": 365,
+        "synthesis_ms": 960,
+        "total_ms": 1920
+      }
+    }
+  ]
+}

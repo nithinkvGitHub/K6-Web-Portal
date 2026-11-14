@@ -1,0 +1,35 @@
+{
+  "name": "PerfPilot Verification Suite",
+  "config": "config/perfpilot.json",
+  "gates": "config/gates.perfpilot.json",
+  "steps": [
+    {
+      "name": "smoke",
+      "workload": "smoke",
+      "guard": true,
+      "haltBelowCompletion": 0.5,
+      "tiers": {
+        "quick": { "flags": { "datasets": "data/perfpilot-quick.json" }, "env": { "SMOKE_ITERATIONS": "3" } },
+        "standard": { "flags": {}, "env": { "SMOKE_ITERATIONS": "5" } }
+      }
+    },
+    {
+      "name": "baseline",
+      "workload": "baseline",
+      "guard": true,
+      "tiers": {
+        "quick": { "flags": { "datasets": "data/perfpilot-quick.json" }, "env": { "BASELINE_REPEAT": "1" } },
+        "standard": { "flags": {}, "env": { "BASELINE_REPEAT": "2" } }
+      }
+    },
+    {
+      "name": "plateaus",
+      "workload": "plateaus",
+      "baselineFrom": "baseline",
+      "tiers": {
+        "quick": { "flags": { "levels": "2,5", "hold": "12s" }, "env": {} },
+        "standard": { "flags": { "levels": "5,10,25", "hold": "5m" }, "env": {} }
+      }
+    }
+  ]
+}

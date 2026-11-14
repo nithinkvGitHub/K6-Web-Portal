@@ -1,0 +1,985 @@
+{
+  "run_id": "MULTIPOP_134859",
+  "created_at": "2026-11-14T08:18:59.371Z",
+  "workload": "multipop:enterprise-omni-framework",
+  "config_file": "config/perfpilot.json",
+  "target_name": "PerfPilot Agent (HTTP JSON)",
+  "model": "perfpilot-v2",
+  "stream": false,
+  "stream_engine": "k6-http",
+  "workers_used": [
+    "EC2-Worker-01",
+    "EC2-Worker-02"
+  ],
+  "execution_mode": "split-50-50",
+  "rows": 437,
+  "steady_rows": 437,
+  "evaluated_rows": 437,
+  "levels": [
+    {
+      "level": 6,
+      "n": 30,
+      "low_sample": false,
+      "in_flight_avg": 5.3,
+      "in_flight_peak": 6,
+      "e2e_p50_ms": 1699,
+      "e2e_p95_ms": 1955,
+      "e2e_p99_ms": 2060,
+      "e2e_avg_ms": 1607,
+      "ttft_p50_ms": 1053,
+      "ttft_p95_ms": 1212,
+      "completion_rate": 1,
+      "http_error_rate": 0,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 1,
+      "correctness_avg": 0.88,
+      "groundedness_avg": 0.531,
+      "steps_avg": 2,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.0008,
+      "qdul_pct_max": 0,
+      "worker_distribution": {
+        "EC2-Worker-01": 30
+      },
+      "stage_timings_ms": {
+        "planning_avg": 450,
+        "tools_avg": 386,
+        "synthesis_avg": 771
+      }
+    },
+    {
+      "level": 8,
+      "n": 37,
+      "low_sample": false,
+      "in_flight_avg": 7,
+      "in_flight_peak": 8,
+      "e2e_p50_ms": 1925,
+      "e2e_p95_ms": 2038,
+      "e2e_p99_ms": 2207,
+      "e2e_avg_ms": 1807,
+      "ttft_p50_ms": 462,
+      "ttft_p95_ms": 489,
+      "completion_rate": 1,
+      "http_error_rate": 0,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 1,
+      "correctness_avg": 0.88,
+      "groundedness_avg": 0.531,
+      "steps_avg": 3,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.0008,
+      "qdul_pct_max": 0,
+      "worker_distribution": {
+        "EC2-Worker-02": 37
+      },
+      "stage_timings_ms": {
+        "planning_avg": 506,
+        "tools_avg": 434,
+        "synthesis_avg": 867
+      }
+    },
+    {
+      "level": 10,
+      "n": 370,
+      "low_sample": false,
+      "in_flight_avg": 8.8,
+      "in_flight_peak": 10,
+      "e2e_p50_ms": 5,
+      "e2e_p95_ms": 11,
+      "e2e_p99_ms": 38,
+      "e2e_avg_ms": 7,
+      "ttft_p50_ms": 25,
+      "ttft_p95_ms": 25,
+      "completion_rate": 1,
+      "http_error_rate": 0,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 1,
+      "correctness_avg": 0.88,
+      "groundedness_avg": 0.557,
+      "steps_avg": 2,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.0008,
+      "qdul_pct_max": 0,
+      "worker_distribution": {
+        "EC2-Worker-01": 185,
+        "EC2-Worker-02": 185
+      },
+      "stage_timings_ms": {
+        "planning_avg": 2,
+        "tools_avg": 1,
+        "synthesis_avg": 10
+      }
+    }
+  ],
+  "categories": {
+    "POP_RETAIL_BUYERS": {
+      "level": 1,
+      "n": 370,
+      "low_sample": false,
+      "in_flight_avg": 0.9,
+      "in_flight_peak": 1,
+      "e2e_p50_ms": 5,
+      "e2e_p95_ms": 11,
+      "e2e_p99_ms": 38,
+      "e2e_avg_ms": 7,
+      "ttft_p50_ms": 25,
+      "ttft_p95_ms": 25,
+      "completion_rate": 1,
+      "http_error_rate": 0,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 1,
+      "correctness_avg": 0.88,
+      "groundedness_avg": 0.557,
+      "steps_avg": 2,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.0008,
+      "qdul_pct_max": 0,
+      "worker_distribution": {
+        "EC2-Worker-01": 185,
+        "EC2-Worker-02": 185
+      },
+      "stage_timings_ms": {
+        "planning_avg": 2,
+        "tools_avg": 1,
+        "synthesis_avg": 10
+      }
+    },
+    "POP_CHECKOUT_TX": {
+      "level": 1,
+      "n": 30,
+      "low_sample": false,
+      "in_flight_avg": 0.9,
+      "in_flight_peak": 1,
+      "e2e_p50_ms": 1699,
+      "e2e_p95_ms": 1955,
+      "e2e_p99_ms": 2060,
+      "e2e_avg_ms": 1607,
+      "ttft_p50_ms": 1053,
+      "ttft_p95_ms": 1212,
+      "completion_rate": 1,
+      "http_error_rate": 0,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 1,
+      "correctness_avg": 0.88,
+      "groundedness_avg": 0.531,
+      "steps_avg": 2,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.0008,
+      "qdul_pct_max": 0,
+      "worker_distribution": {
+        "EC2-Worker-01": 30
+      },
+      "stage_timings_ms": {
+        "planning_avg": 450,
+        "tools_avg": 386,
+        "synthesis_avg": 771
+      }
+    },
+    "POP_AI_SSE_USERS": {
+      "level": 1,
+      "n": 37,
+      "low_sample": false,
+      "in_flight_avg": 0.9,
+      "in_flight_peak": 1,
+      "e2e_p50_ms": 1925,
+      "e2e_p95_ms": 2038,
+      "e2e_p99_ms": 2207,
+      "e2e_avg_ms": 1807,
+      "ttft_p50_ms": 462,
+      "ttft_p95_ms": 489,
+      "completion_rate": 1,
+      "http_error_rate": 0,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 1,
+      "correctness_avg": 0.88,
+      "groundedness_avg": 0.531,
+      "steps_avg": 3,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.0008,
+      "qdul_pct_max": 0,
+      "worker_distribution": {
+        "EC2-Worker-02": 37
+      },
+      "stage_timings_ms": {
+        "planning_avg": 506,
+        "tools_avg": 434,
+        "synthesis_avg": 867
+      }
+    }
+  },
+  "overall": {
+    "level": 10,
+    "n": 437,
+    "low_sample": false,
+    "in_flight_avg": 8.8,
+    "in_flight_peak": 10,
+    "e2e_p50_ms": 6,
+    "e2e_p95_ms": 1929,
+    "e2e_p99_ms": 2032,
+    "e2e_avg_ms": 269,
+    "ttft_p50_ms": 25,
+    "ttft_p95_ms": 960,
+    "completion_rate": 1,
+    "http_error_rate": 0,
+    "timeout_rate": 0,
+    "deterministic_pass_rate": 1,
+    "correctness_avg": 0.88,
+    "groundedness_avg": 0.553,
+    "steps_avg": 2.08,
+    "tool_failure_rate": 0,
+    "critical_failures": 0,
+    "cost_avg": 0.0008,
+    "qdul_pct_max": 0,
+    "worker_distribution": {
+      "EC2-Worker-01": 215,
+      "EC2-Worker-02": 222
+    },
+    "stage_timings_ms": {
+      "planning_avg": 75,
+      "tools_avg": 64,
+      "synthesis_avg": 135
+    }
+  },
+  "capacity": {
+    "max_passing_level": 10,
+    "broke_at_level": null,
+    "broke_reason": null,
+    "slo": {
+      "e2e_p95_ms": 300000,
+      "completion_rate": 0.9,
+      "deterministic_pass_rate": 0.85,
+      "qdul_pct_max": 25
+    }
+  },
+  "timeline": [
+    {
+      "bucket": 1,
+      "ts": "2026-11-14T08:18:59.425Z",
+      "label": "+0s",
+      "requests": 43,
+      "e2e_p95_ms": 686,
+      "ttft_p95_ms": 425,
+      "completion_rate": 1,
+      "correctness_avg": 0.88
+    },
+    {
+      "bucket": 2,
+      "ts": "2026-11-14T08:19:00.250Z",
+      "label": "+1s",
+      "requests": 49,
+      "e2e_p95_ms": 1557,
+      "ttft_p95_ms": 585,
+      "completion_rate": 1,
+      "correctness_avg": 0.88
+    },
+    {
+      "bucket": 3,
+      "ts": "2026-11-14T08:19:01.076Z",
+      "label": "+2s",
+      "requests": 42,
+      "e2e_p95_ms": 7,
+      "ttft_p95_ms": 25,
+      "completion_rate": 1,
+      "correctness_avg": 0.88
+    },
+    {
+      "bucket": 4,
+      "ts": "2026-11-14T08:19:01.902Z",
+      "label": "+2s",
+      "requests": 49,
+      "e2e_p95_ms": 1831,
+      "ttft_p95_ms": 1118,
+      "completion_rate": 1,
+      "correctness_avg": 0.88
+    },
+    {
+      "bucket": 5,
+      "ts": "2026-11-14T08:19:02.728Z",
+      "label": "+3s",
+      "requests": 43,
+      "e2e_p95_ms": 1862,
+      "ttft_p95_ms": 447,
+      "completion_rate": 1,
+      "correctness_avg": 0.88
+    },
+    {
+      "bucket": 6,
+      "ts": "2026-11-14T08:19:03.554Z",
+      "label": "+4s",
+      "requests": 37,
+      "e2e_p95_ms": 2033,
+      "ttft_p95_ms": 1110,
+      "completion_rate": 1,
+      "correctness_avg": 0.88
+    },
+    {
+      "bucket": 7,
+      "ts": "2026-11-14T08:19:04.380Z",
+      "label": "+5s",
+      "requests": 45,
+      "e2e_p95_ms": 1942,
+      "ttft_p95_ms": 474,
+      "completion_rate": 1,
+      "correctness_avg": 0.88
+    },
+    {
+      "bucket": 8,
+      "ts": "2026-11-14T08:19:05.205Z",
+      "label": "+6s",
+      "requests": 44,
+      "e2e_p95_ms": 1972,
+      "ttft_p95_ms": 473,
+      "completion_rate": 1,
+      "correctness_avg": 0.88
+    },
+    {
+      "bucket": 9,
+      "ts": "2026-11-14T08:19:06.031Z",
+      "label": "+7s",
+      "requests": 46,
+      "e2e_p95_ms": 1952,
+      "ttft_p95_ms": 1027,
+      "completion_rate": 1,
+      "correctness_avg": 0.88
+    },
+    {
+      "bucket": 10,
+      "ts": "2026-11-14T08:19:06.857Z",
+      "label": "+7s",
+      "requests": 26,
+      "e2e_p95_ms": 1971,
+      "ttft_p95_ms": 477,
+      "completion_rate": 1,
+      "correctness_avg": 0.88
+    },
+    {
+      "bucket": 11,
+      "ts": "2026-11-14T08:19:07.683Z",
+      "label": "+8s",
+      "requests": 7,
+      "e2e_p95_ms": 1926,
+      "ttft_p95_ms": 1099,
+      "completion_rate": 1,
+      "correctness_avg": 0.88
+    },
+    {
+      "bucket": 12,
+      "ts": "2026-11-14T08:19:08.509Z",
+      "label": "+9s",
+      "requests": 6,
+      "e2e_p95_ms": 2018,
+      "ttft_p95_ms": 1202,
+      "completion_rate": 1,
+      "correctness_avg": 0.88
+    }
+  ],
+  "warnings": [],
+  "gate": {
+    "name": "PerfPilot Provisional Gates",
+    "passed": true,
+    "results": [
+      {
+        "metric": "e2e_p95_ms",
+        "op": "<=",
+        "value": 300000,
+        "label": "E2E Latency p95 <= 300s",
+        "actual": 11,
+        "status": "PASS"
+      },
+      {
+        "metric": "http_error_rate",
+        "op": "<=",
+        "value": 0.05,
+        "label": "HTTP Error Rate <= 5%",
+        "actual": 0,
+        "status": "PASS"
+      },
+      {
+        "metric": "timeout_rate",
+        "op": "<=",
+        "value": 0.05,
+        "label": "Timeout Rate <= 5%",
+        "actual": 0,
+        "status": "PASS"
+      },
+      {
+        "metric": "completion_rate",
+        "op": ">=",
+        "value": 0.9,
+        "label": "Completion Rate >= 90%",
+        "actual": 1,
+        "status": "PASS"
+      },
+      {
+        "metric": "tool_failure_rate",
+        "op": "<=",
+        "value": 0.1,
+        "label": "Tool Call Failure Rate <= 10%",
+        "actual": 0,
+        "status": "PASS"
+      },
+      {
+        "metric": "deterministic_pass_rate",
+        "op": ">=",
+        "value": 0.8,
+        "label": "Deterministic Pass Rate >= 80%",
+        "actual": 1,
+        "status": "PASS"
+      },
+      {
+        "metric": "critical_failures",
+        "op": "==",
+        "value": 0,
+        "label": "Zero Critical Safety Failures",
+        "actual": 0,
+        "status": "PASS"
+      },
+      {
+        "metric": "qdul_pct_max",
+        "op": "<=",
+        "value": 25,
+        "label": "Quality Drop Under Load (QDUL) <= 25%",
+        "actual": 0,
+        "status": "PASS"
+      }
+    ]
+  },
+  "slowest": [
+    {
+      "aiperf": 1,
+      "mode": "multi-population",
+      "project_id": "enterprise-omni-framework",
+      "population_id": "POP_AI_SSE_USERS",
+      "population_name": "Pop 3: AI Copilot SSE Streaming Users",
+      "protocol": "SSE",
+      "row_id": "MULTIPOP_134859_EC2-Worker-02_116",
+      "run_id": "MULTIPOP_134859",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "100% (8/8 VUs)",
+      "ts": "2026-11-14T08:19:03.628Z",
+      "workload": "multipop:enterprise-omni-framework",
+      "scenario_id": "POP_AI_SSE_USERS",
+      "load_level": 8,
+      "prompt_id": "POP_AI_SSE_USERS#aiCopilotSseFlow",
+      "category": "POP_AI_SSE_USERS",
+      "turn": 2,
+      "session_id": "S_POP_AI_SSE_USERS_02_8_2",
+      "trace_id": "tr_cd151f88",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 530,
+      "e2e_ms": 2207,
+      "steps": 3,
+      "tool_calls": [
+        "query_newrelic_nrql",
+        "fetch_cluster_metrics"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "correctness": 0.96,
+      "groundedness": 0.94,
+      "answer": "[POP_AI_SSE_USERS | flows/ai-assistant-rag.js -> aiCopilotSseFlow() | Injector: EC2-Worker-02 (100%)] HTTP 200 in 2207ms",
+      "contexts": [
+        "Project: enterprise-omni-framework",
+        "Flow: flows/ai-assistant-rag.js",
+        "Dataset: data/ai-prompts.json"
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 48,
+      "est_cost": 0.0008,
+      "vars": {
+        "dataset": "data/ai-prompts.json",
+        "injector_share": "100%"
+      },
+      "server_timing": {
+        "planning_ms": 618,
+        "tools_ms": 530,
+        "synthesis_ms": 1059,
+        "total_ms": 2207
+      }
+    },
+    {
+      "aiperf": 1,
+      "mode": "multi-population",
+      "project_id": "enterprise-omni-framework",
+      "population_id": "POP_CHECKOUT_TX",
+      "population_name": "Pop 2: High-Value Checkout Transactions",
+      "protocol": "HTTP",
+      "row_id": "MULTIPOP_134859_EC2-Worker-01_183",
+      "run_id": "MULTIPOP_134859",
+      "worker_id": "EC2-Worker-01",
+      "execution_segment": "100% (6/6 VUs)",
+      "ts": "2026-11-14T08:19:06.249Z",
+      "workload": "multipop:enterprise-omni-framework",
+      "scenario_id": "POP_CHECKOUT_TX",
+      "load_level": 6,
+      "prompt_id": "POP_CHECKOUT_TX#checkoutPaymentFlow",
+      "category": "POP_CHECKOUT_TX",
+      "turn": 4,
+      "session_id": "S_POP_CHECKOUT_TX_01_2_4",
+      "trace_id": "tr_b261c9c3",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 1277,
+      "e2e_ms": 2060,
+      "steps": 2,
+      "tool_calls": [
+        "checkoutPaymentFlow"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "correctness": 0.96,
+      "groundedness": 0.94,
+      "answer": "[POP_CHECKOUT_TX | flows/checkout-payment.js -> checkoutPaymentFlow() | Injector: EC2-Worker-01 (100%)] HTTP 200 in 2060ms",
+      "contexts": [
+        "Project: enterprise-omni-framework",
+        "Flow: flows/checkout-payment.js",
+        "Dataset: data/products.json"
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 48,
+      "est_cost": 0.0008,
+      "vars": {
+        "dataset": "data/products.json",
+        "injector_share": "100%"
+      },
+      "server_timing": {
+        "planning_ms": 577,
+        "tools_ms": 494,
+        "synthesis_ms": 989,
+        "total_ms": 2060
+      }
+    },
+    {
+      "aiperf": 1,
+      "mode": "multi-population",
+      "project_id": "enterprise-omni-framework",
+      "population_id": "POP_AI_SSE_USERS",
+      "population_name": "Pop 3: AI Copilot SSE Streaming Users",
+      "protocol": "SSE",
+      "row_id": "MULTIPOP_134859_EC2-Worker-02_149",
+      "run_id": "MULTIPOP_134859",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "100% (8/8 VUs)",
+      "ts": "2026-11-14T08:19:04.933Z",
+      "workload": "multipop:enterprise-omni-framework",
+      "scenario_id": "POP_AI_SSE_USERS",
+      "load_level": 8,
+      "prompt_id": "POP_AI_SSE_USERS#aiCopilotSseFlow",
+      "category": "POP_AI_SSE_USERS",
+      "turn": 3,
+      "session_id": "S_POP_AI_SSE_USERS_02_3_3",
+      "trace_id": "tr_dc859a2d",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 489,
+      "e2e_ms": 2038,
+      "steps": 3,
+      "tool_calls": [
+        "query_newrelic_nrql",
+        "fetch_cluster_metrics"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "correctness": 0.96,
+      "groundedness": 0.94,
+      "answer": "[POP_AI_SSE_USERS | flows/ai-assistant-rag.js -> aiCopilotSseFlow() | Injector: EC2-Worker-02 (100%)] HTTP 200 in 2038ms",
+      "contexts": [
+        "Project: enterprise-omni-framework",
+        "Flow: flows/ai-assistant-rag.js",
+        "Dataset: data/ai-prompts.json"
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 48,
+      "est_cost": 0.0008,
+      "vars": {
+        "dataset": "data/ai-prompts.json",
+        "injector_share": "100%"
+      },
+      "server_timing": {
+        "planning_ms": 571,
+        "tools_ms": 489,
+        "synthesis_ms": 978,
+        "total_ms": 2038
+      }
+    },
+    {
+      "aiperf": 1,
+      "mode": "multi-population",
+      "project_id": "enterprise-omni-framework",
+      "population_id": "POP_AI_SSE_USERS",
+      "population_name": "Pop 3: AI Copilot SSE Streaming Users",
+      "protocol": "SSE",
+      "row_id": "MULTIPOP_134859_EC2-Worker-02_115",
+      "run_id": "MULTIPOP_134859",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "100% (8/8 VUs)",
+      "ts": "2026-11-14T08:19:03.563Z",
+      "workload": "multipop:enterprise-omni-framework",
+      "scenario_id": "POP_AI_SSE_USERS",
+      "load_level": 8,
+      "prompt_id": "POP_AI_SSE_USERS#aiCopilotSseFlow",
+      "category": "POP_AI_SSE_USERS",
+      "turn": 2,
+      "session_id": "S_POP_AI_SSE_USERS_02_6_2",
+      "trace_id": "tr_2231dd9d",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 488,
+      "e2e_ms": 2033,
+      "steps": 3,
+      "tool_calls": [
+        "query_newrelic_nrql",
+        "fetch_cluster_metrics"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "correctness": 0.96,
+      "groundedness": 0.94,
+      "answer": "[POP_AI_SSE_USERS | flows/ai-assistant-rag.js -> aiCopilotSseFlow() | Injector: EC2-Worker-02 (100%)] HTTP 200 in 2033ms",
+      "contexts": [
+        "Project: enterprise-omni-framework",
+        "Flow: flows/ai-assistant-rag.js",
+        "Dataset: data/ai-prompts.json"
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 48,
+      "est_cost": 0.0008,
+      "vars": {
+        "dataset": "data/ai-prompts.json",
+        "injector_share": "100%"
+      },
+      "server_timing": {
+        "planning_ms": 569,
+        "tools_ms": 488,
+        "synthesis_ms": 976,
+        "total_ms": 2033
+      }
+    },
+    {
+      "aiperf": 1,
+      "mode": "multi-population",
+      "project_id": "enterprise-omni-framework",
+      "population_id": "POP_AI_SSE_USERS",
+      "population_name": "Pop 3: AI Copilot SSE Streaming Users",
+      "protocol": "SSE",
+      "row_id": "MULTIPOP_134859_EC2-Worker-02_174",
+      "run_id": "MULTIPOP_134859",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "100% (8/8 VUs)",
+      "ts": "2026-11-14T08:19:05.875Z",
+      "workload": "multipop:enterprise-omni-framework",
+      "scenario_id": "POP_AI_SSE_USERS",
+      "load_level": 8,
+      "prompt_id": "POP_AI_SSE_USERS#aiCopilotSseFlow",
+      "category": "POP_AI_SSE_USERS",
+      "turn": 3,
+      "session_id": "S_POP_AI_SSE_USERS_02_8_3",
+      "trace_id": "tr_a1ccf63b",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 488,
+      "e2e_ms": 2032,
+      "steps": 3,
+      "tool_calls": [
+        "query_newrelic_nrql",
+        "fetch_cluster_metrics"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "correctness": 0.96,
+      "groundedness": 0.94,
+      "answer": "[POP_AI_SSE_USERS | flows/ai-assistant-rag.js -> aiCopilotSseFlow() | Injector: EC2-Worker-02 (100%)] HTTP 200 in 2032ms",
+      "contexts": [
+        "Project: enterprise-omni-framework",
+        "Flow: flows/ai-assistant-rag.js",
+        "Dataset: data/ai-prompts.json"
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 48,
+      "est_cost": 0.0008,
+      "vars": {
+        "dataset": "data/ai-prompts.json",
+        "injector_share": "100%"
+      },
+      "server_timing": {
+        "planning_ms": 569,
+        "tools_ms": 488,
+        "synthesis_ms": 975,
+        "total_ms": 2032
+      }
+    },
+    {
+      "aiperf": 1,
+      "mode": "multi-population",
+      "project_id": "enterprise-omni-framework",
+      "population_id": "POP_AI_SSE_USERS",
+      "population_name": "Pop 3: AI Copilot SSE Streaming Users",
+      "protocol": "SSE",
+      "row_id": "MULTIPOP_134859_EC2-Worker-02_221",
+      "run_id": "MULTIPOP_134859",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "100% (8/8 VUs)",
+      "ts": "2026-11-14T08:19:09.273Z",
+      "workload": "multipop:enterprise-omni-framework",
+      "scenario_id": "POP_AI_SSE_USERS",
+      "load_level": 8,
+      "prompt_id": "POP_AI_SSE_USERS#aiCopilotSseFlow",
+      "category": "POP_AI_SSE_USERS",
+      "turn": 5,
+      "session_id": "S_POP_AI_SSE_USERS_02_1_5",
+      "trace_id": "tr_5ad89ad3",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 484,
+      "e2e_ms": 2018,
+      "steps": 3,
+      "tool_calls": [
+        "query_newrelic_nrql",
+        "fetch_cluster_metrics"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "correctness": 0.96,
+      "groundedness": 0.94,
+      "answer": "[POP_AI_SSE_USERS | flows/ai-assistant-rag.js -> aiCopilotSseFlow() | Injector: EC2-Worker-02 (100%)] HTTP 200 in 2018ms",
+      "contexts": [
+        "Project: enterprise-omni-framework",
+        "Flow: flows/ai-assistant-rag.js",
+        "Dataset: data/ai-prompts.json"
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 48,
+      "est_cost": 0.0008,
+      "vars": {
+        "dataset": "data/ai-prompts.json",
+        "injector_share": "100%"
+      },
+      "server_timing": {
+        "planning_ms": 565,
+        "tools_ms": 484,
+        "synthesis_ms": 969,
+        "total_ms": 2018
+      }
+    },
+    {
+      "aiperf": 1,
+      "mode": "multi-population",
+      "project_id": "enterprise-omni-framework",
+      "population_id": "POP_AI_SSE_USERS",
+      "population_name": "Pop 3: AI Copilot SSE Streaming Users",
+      "protocol": "SSE",
+      "row_id": "MULTIPOP_134859_EC2-Worker-02_162",
+      "run_id": "MULTIPOP_134859",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "100% (8/8 VUs)",
+      "ts": "2026-11-14T08:19:05.303Z",
+      "workload": "multipop:enterprise-omni-framework",
+      "scenario_id": "POP_AI_SSE_USERS",
+      "load_level": 8,
+      "prompt_id": "POP_AI_SSE_USERS#aiCopilotSseFlow",
+      "category": "POP_AI_SSE_USERS",
+      "turn": 3,
+      "session_id": "S_POP_AI_SSE_USERS_02_4_3",
+      "trace_id": "tr_c65e630e",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 477,
+      "e2e_ms": 1989,
+      "steps": 3,
+      "tool_calls": [
+        "query_newrelic_nrql",
+        "fetch_cluster_metrics"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "correctness": 0.96,
+      "groundedness": 0.94,
+      "answer": "[POP_AI_SSE_USERS | flows/ai-assistant-rag.js -> aiCopilotSseFlow() | Injector: EC2-Worker-02 (100%)] HTTP 200 in 1989ms",
+      "contexts": [
+        "Project: enterprise-omni-framework",
+        "Flow: flows/ai-assistant-rag.js",
+        "Dataset: data/ai-prompts.json"
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 48,
+      "est_cost": 0.0008,
+      "vars": {
+        "dataset": "data/ai-prompts.json",
+        "injector_share": "100%"
+      },
+      "server_timing": {
+        "planning_ms": 557,
+        "tools_ms": 477,
+        "synthesis_ms": 955,
+        "total_ms": 1989
+      }
+    },
+    {
+      "aiperf": 1,
+      "mode": "multi-population",
+      "project_id": "enterprise-omni-framework",
+      "population_id": "POP_AI_SSE_USERS",
+      "population_name": "Pop 3: AI Copilot SSE Streaming Users",
+      "protocol": "SSE",
+      "row_id": "MULTIPOP_134859_EC2-Worker-02_209",
+      "run_id": "MULTIPOP_134859",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "100% (8/8 VUs)",
+      "ts": "2026-11-14T08:19:07.134Z",
+      "workload": "multipop:enterprise-omni-framework",
+      "scenario_id": "POP_AI_SSE_USERS",
+      "load_level": 8,
+      "prompt_id": "POP_AI_SSE_USERS#aiCopilotSseFlow",
+      "category": "POP_AI_SSE_USERS",
+      "turn": 4,
+      "session_id": "S_POP_AI_SSE_USERS_02_3_4",
+      "trace_id": "tr_6036268c",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 477,
+      "e2e_ms": 1987,
+      "steps": 3,
+      "tool_calls": [
+        "query_newrelic_nrql",
+        "fetch_cluster_metrics"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "correctness": 0.96,
+      "groundedness": 0.94,
+      "answer": "[POP_AI_SSE_USERS | flows/ai-assistant-rag.js -> aiCopilotSseFlow() | Injector: EC2-Worker-02 (100%)] HTTP 200 in 1987ms",
+      "contexts": [
+        "Project: enterprise-omni-framework",
+        "Flow: flows/ai-assistant-rag.js",
+        "Dataset: data/ai-prompts.json"
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 48,
+      "est_cost": 0.0008,
+      "vars": {
+        "dataset": "data/ai-prompts.json",
+        "injector_share": "100%"
+      },
+      "server_timing": {
+        "planning_ms": 556,
+        "tools_ms": 477,
+        "synthesis_ms": 954,
+        "total_ms": 1987
+      }
+    },
+    {
+      "aiperf": 1,
+      "mode": "multi-population",
+      "project_id": "enterprise-omni-framework",
+      "population_id": "POP_AI_SSE_USERS",
+      "population_name": "Pop 3: AI Copilot SSE Streaming Users",
+      "protocol": "SSE",
+      "row_id": "MULTIPOP_134859_EC2-Worker-02_222",
+      "run_id": "MULTIPOP_134859",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "100% (8/8 VUs)",
+      "ts": "2026-11-14T08:19:09.335Z",
+      "workload": "multipop:enterprise-omni-framework",
+      "scenario_id": "POP_AI_SSE_USERS",
+      "load_level": 8,
+      "prompt_id": "POP_AI_SSE_USERS#aiCopilotSseFlow",
+      "category": "POP_AI_SSE_USERS",
+      "turn": 5,
+      "session_id": "S_POP_AI_SSE_USERS_02_3_5",
+      "trace_id": "tr_6133a884",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 477,
+      "e2e_ms": 1987,
+      "steps": 3,
+      "tool_calls": [
+        "query_newrelic_nrql",
+        "fetch_cluster_metrics"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "correctness": 0.96,
+      "groundedness": 0.94,
+      "answer": "[POP_AI_SSE_USERS | flows/ai-assistant-rag.js -> aiCopilotSseFlow() | Injector: EC2-Worker-02 (100%)] HTTP 200 in 1987ms",
+      "contexts": [
+        "Project: enterprise-omni-framework",
+        "Flow: flows/ai-assistant-rag.js",
+        "Dataset: data/ai-prompts.json"
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 48,
+      "est_cost": 0.0008,
+      "vars": {
+        "dataset": "data/ai-prompts.json",
+        "injector_share": "100%"
+      },
+      "server_timing": {
+        "planning_ms": 556,
+        "tools_ms": 477,
+        "synthesis_ms": 954,
+        "total_ms": 1987
+      }
+    },
+    {
+      "aiperf": 1,
+      "mode": "multi-population",
+      "project_id": "enterprise-omni-framework",
+      "population_id": "POP_AI_SSE_USERS",
+      "population_name": "Pop 3: AI Copilot SSE Streaming Users",
+      "protocol": "SSE",
+      "row_id": "MULTIPOP_134859_EC2-Worker-02_148",
+      "run_id": "MULTIPOP_134859",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "100% (8/8 VUs)",
+      "ts": "2026-11-14T08:19:04.869Z",
+      "workload": "multipop:enterprise-omni-framework",
+      "scenario_id": "POP_AI_SSE_USERS",
+      "load_level": 8,
+      "prompt_id": "POP_AI_SSE_USERS#aiCopilotSseFlow",
+      "category": "POP_AI_SSE_USERS",
+      "turn": 3,
+      "session_id": "S_POP_AI_SSE_USERS_02_1_3",
+      "trace_id": "tr_cecf578a",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 474,
+      "e2e_ms": 1975,
+      "steps": 3,
+      "tool_calls": [
+        "query_newrelic_nrql",
+        "fetch_cluster_metrics"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "correctness": 0.96,
+      "groundedness": 0.94,
+      "answer": "[POP_AI_SSE_USERS | flows/ai-assistant-rag.js -> aiCopilotSseFlow() | Injector: EC2-Worker-02 (100%)] HTTP 200 in 1975ms",
+      "contexts": [
+        "Project: enterprise-omni-framework",
+        "Flow: flows/ai-assistant-rag.js",
+        "Dataset: data/ai-prompts.json"
+      ],
+      "prompt_tokens": 28,
+      "completion_tokens": 48,
+      "est_cost": 0.0008,
+      "vars": {
+        "dataset": "data/ai-prompts.json",
+        "injector_share": "100%"
+      },
+      "server_timing": {
+        "planning_ms": 553,
+        "tools_ms": 474,
+        "synthesis_ms": 948,
+        "total_ms": 1975
+      }
+    }
+  ],
+  "failures": []
+}

@@ -1,0 +1,11 @@
+{
+  "run_id": "PP_BASE_HTTP",
+  "workload": "baseline",
+  "config_file": "config/perfpilot.json",
+  "started_at": "2026-11-12T09:15:00.000Z",
+  "workers_used": [
+    "EC2-Worker-01"
+  ],
+  "execution_mode": "single-worker",
+  "k6": "v2.3.0 (xk6-sse v0.2.0)"
+}

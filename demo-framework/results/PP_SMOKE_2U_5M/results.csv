@@ -1,0 +1,13 @@
+row_id,run_id,worker_id,load_level,prompt_id,category,completion_status,http_status,ttft_ms,e2e_ms,steps,det_pass,correctness_score,groundedness_score,trace_id
+PP_SMOKE_2U_5M_EC2-Worker-02_1,PP_SMOKE_2U_5M,EC2-Worker-02,2,PP-S03,analysis,completed,200,198,697,3,true,1,0.868,tr_pp_smoke_2u_5m_1001
+PP_SMOKE_2U_5M_EC2-Worker-01_2,PP_SMOKE_2U_5M,EC2-Worker-01,2,PP-A02,agent,completed,200,208,734,2,true,1,0.992,tr_pp_smoke_2u_5m_1002
+PP_SMOKE_2U_5M_EC2-Worker-02_3,PP_SMOKE_2U_5M,EC2-Worker-02,2,PP-X01,adversarial,completed,200,219,771,1,true,1,0.522,tr_pp_smoke_2u_5m_1003
+PP_SMOKE_2U_5M_EC2-Worker-01_4,PP_SMOKE_2U_5M,EC2-Worker-01,2,PP-S01,simple,completed,200,229,808,2,true,1,0.909,tr_pp_smoke_2u_5m_1004
+PP_SMOKE_2U_5M_EC2-Worker-02_5,PP_SMOKE_2U_5M,EC2-Worker-02,2,PP-S03,analysis,completed,200,239,845,3,true,1,0.868,tr_pp_smoke_2u_5m_1005
+PP_SMOKE_2U_5M_EC2-Worker-01_6,PP_SMOKE_2U_5M,EC2-Worker-01,2,PP-A02,agent,completed,200,250,882,2,true,1,0.992,tr_pp_smoke_2u_5m_1006
+PP_SMOKE_2U_5M_EC2-Worker-02_7,PP_SMOKE_2U_5M,EC2-Worker-02,2,PP-X01,adversarial,completed,200,193,679,1,true,1,0.522,tr_pp_smoke_2u_5m_1007
+PP_SMOKE_2U_5M_EC2-Worker-01_8,PP_SMOKE_2U_5M,EC2-Worker-01,2,PP-S01,simple,completed,200,203,716,2,true,1,0.909,tr_pp_smoke_2u_5m_1008
+PP_SMOKE_2U_5M_EC2-Worker-02_9,PP_SMOKE_2U_5M,EC2-Worker-02,2,PP-S03,analysis,completed,200,214,753,3,true,1,0.868,tr_pp_smoke_2u_5m_1009
+PP_SMOKE_2U_5M_EC2-Worker-01_10,PP_SMOKE_2U_5M,EC2-Worker-01,2,PP-A02,agent,completed,200,224,790,2,true,1,0.992,tr_pp_smoke_2u_5m_1010
+PP_SMOKE_2U_5M_EC2-Worker-02_11,PP_SMOKE_2U_5M,EC2-Worker-02,2,PP-X01,adversarial,completed,200,234,827,1,true,1,0.522,tr_pp_smoke_2u_5m_1011
+PP_SMOKE_2U_5M_EC2-Worker-01_12,PP_SMOKE_2U_5M,EC2-Worker-01,2,PP-S01,simple,completed,200,245,864,2,true,1,0.909,tr_pp_smoke_2u_5m_1012

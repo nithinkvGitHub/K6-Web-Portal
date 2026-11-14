@@ -1,0 +1,46 @@
+[
+  {
+    "id": "S001",
+    "category": "simple",
+    "prompt": "What is the standard fee for managed accounts?",
+    "expected": {
+      "contains": ["0.85"],
+      "reference": "The standard fee is 0.85 percent a year for managed accounts."
+    }
+  },
+  {
+    "id": "R001",
+    "category": "rag",
+    "prompt": "What caused the checkout-service p95 latency spike under 50 VUs?",
+    "expected": {
+      "contains": ["1,420ms", "PostgreSQL"],
+      "citations": true,
+      "reference": "The checkout-service p95 latency reached 1,420ms due to PostgreSQL connection pool exhaustion under 50 VUs."
+    }
+  },
+  {
+    "id": "A001",
+    "category": "agent",
+    "prompt": "Check the latest cluster telemetry and report CPU and memory utilization.",
+    "expected": {
+      "contains": ["58%", "72%"],
+      "tools": ["fetch_cluster_metrics"],
+      "toolsMode": "contains",
+      "reference": "CPU utilization averaged 58% and memory utilization stayed below 72% across all cluster nodes with 99.4% completion."
+    }
+  },
+  {
+    "id": "C001",
+    "category": "conversation",
+    "turns": [
+      {
+        "prompt": "Explain the standard pricing fee schedule.",
+        "expected": { "contains": ["0.85"] }
+      },
+      {
+        "prompt": "And what is the current checkout-service p95 latency?",
+        "expected": { "contains": ["1,420ms"] }
+      }
+    ]
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "total_rows": 4,
+  "evaluated_rows": 4,
+  "evaluators": [
+    "lexical"
+  ]
+}

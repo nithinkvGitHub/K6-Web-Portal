@@ -1,0 +1,20 @@
+{
+  "run_id": "PP_VERIFY_DIST_2EC2",
+  "workload": "smoke",
+  "config_file": "config/perfpilot-sse.json",
+  "gates_file": "config/gates.perfpilot.json",
+  "started_at": "2026-11-14T07:16:33.934Z",
+  "workers_used": [
+    "EC2-Worker-01",
+    "EC2-Worker-02"
+  ],
+  "execution_mode": "split-50-50",
+  "k6": "v2.3.0 (distributed segment mode)",
+  "target": {
+    "name": "PerfPilot Agent (SSE Streaming)",
+    "baseUrl": "http://127.0.0.1:8089",
+    "path": "/modules/agent_mcp_bridge/api/agent/stream",
+    "model": "perfpilot-v2",
+    "stream": true
+  }
+}

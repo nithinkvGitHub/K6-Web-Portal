@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIPerf Cloud k6 — Distributed AI Agent Performance & Load Orchestrator</title>
+  <style>
+    :root {
+      --bg-0: #070a12;
+      --bg-1: #0f1624;
+      --bg-2: #162033;
+      --bg-3: #1e2b45;
+      --border: #263554;
+      --text-0: #f8fafc;
+      --text-1: #cbd5e1;
+      --text-2: #8b9bb4;
+      --accent: #f97316;
+      --accent-2: #6366f1;
+      --green: #10b981;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --cyan: #06b6d4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-0);
+      color: var(--text-0);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    /* Top Header */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 22px;
+      background: linear-gradient(90deg, #0b111e 0%, #131c31 100%);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #f97316, #ec4899, #6366f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 14px;
+      color: white;
+      box-shadow: 0 0 18px rgba(249, 115, 22, 0.35);
+    }
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-2);
+    }
+    .cluster-pills {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 11.5px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+    }
+    .dot.busy {
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse {
+      from { transform: scale(0.9); opacity: 0.7; }
+      to { transform: scale(1.25); opacity: 1; }
+    }
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 0 22px;
+      background: var(--bg-1);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-tab {
+      padding: 12px 18px;
+      color: var(--text-2);
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-tab:hover { color: var(--text-0); }
+    .nav-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      background: rgba(249, 115, 22, 0.06);
+    }
+    /* Layout */
+    .main-container {
+      max-width: 1560px;
+      margin: 0 auto;
+      padding: 20px 22px 48px;
+    }
+    .grid-2 { display: grid; grid-template-columns: 390px 1fr; gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    @media (max-width: 1100px) {
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-0);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    /* Forms & Buttons */
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-2);
+      margin-bottom: 5px;
+      letter-spacing: 0.03em;
+    }
+    select, input[type="text"], input[type="number"], textarea {
+      width: 100%;
+      background: var(--bg-0);
+      border: 1px solid var(--border);
+      color: var(--text-0);
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      margin-bottom: 12px;
+      font-family: inherit;
+    }
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 15px;
+      border-radius: 7px;
+      font-weight: 600;
+      font-size: 12.5px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: #fff;
+      box-shadow: 0 3px 12px rgba(249, 115, 22, 0.3);
+    }
+    .btn-primary:hover { filter: brightness(1.1); }
+    .btn-secondary {
+      background: var(--bg-2);
+      border-color: var(--border);
+      color: var(--text-0);
+    }
+    .btn-secondary:hover { background: var(--bg-3); }
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #fca5a5;
+    }
+    /* Pipeline Stepper */
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .step-box {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      position: relative;
+    }
+    .step-box.active {
+      border-color: var(--accent);
+      background: rgba(249, 115, 22, 0.09);
+      box-shadow: 0 0 16px rgba(249, 115, 22, 0.18);
+    }
+    .step-box.done {
+      border-color: rgba(16, 185, 129, 0.5);
+      background: rgba(16, 185, 129, 0.07);
+    }
+    .step-tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-2);
+    }
+    .step-name {
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 3px;
+    }
+    .step-desc {
+      font-size: 11px;
+      color: var(--text-2);
+      margin-top: 3px;
+    }
+    /* Metric Stat Cards */
+    .stat-card {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 13px 15px;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-2);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .stat-value {
+      font-size: 22px;
+      font-weight: 800;
+      margin-top: 4px;
+      color: var(--text-0);
+    }
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text-2);
+      margin-top: 3px;
+    }
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+    th, td {
+      text-align: left;
+      padding: 9px 11px;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      color: var(--text-2);
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      background: rgba(15, 22, 36, 0.6);
+    }
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+    .badge-pass { background: rgba(16, 185, 129, 0.16); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); }
+    .badge-fail { background: rgba(239, 68, 68, 0.16); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
+    .badge-warn { background: rgba(245, 158, 11, 0.16); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
+    .badge-info { background: rgba(99, 102, 241, 0.16); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.35); }
+    /* Console Log */
+    .console-box {
+      background: #05070d;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+      font-size: 11.5px;
+      height: 220px;
+      overflow-y: auto;
+      color: #cbd5e1;
+    }
+    .log-line { margin-bottom: 4px; }
+    .log-line.success { color: #34d399; }
+    .log-line.warn { color: #fbbf24; }
+    .log-line.error { color: #f87171; }
+    .hidden { display: none !important; }
+    code {
+      font-family: "JetBrains Mono", Consolas, monospace;
+      background: rgba(255,255,255,0.06);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 11.5px;
+    }
+    .warn-banner {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+      padding: 11px 14px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">k6</div>
+      <div>
+        <div class="brand-title">AIPerf Cloud Orchestrator</div>
+        <div class="brand-sub">Distributed 2-EC2 Load Engine &bull; Node &rarr; k6 &rarr; Node Pipeline</div>
+      </div>
+    </div>
+
+    <div class="cluster-pills" id="headerClusterPills">
+      <div class="pill"><span class="dot" id="dotWorker1"></span><span id="pillWorker1">EC2-Worker-01: Idle (0 VUs)</span></div>
+      <div class="pill"><span class="dot" id="dotWorker2"></span><span id="pillWorker2">EC2-Worker-02: Idle (0 VUs)</span></div>
+      <div class="pill"><span class="dot"></span><span id="pillMockAgent">PerfPilot Target (:8089): Ready</span></div>
+      <button class="btn btn-primary" onclick="quickStartDemoRun()">&#9654; Quick Demo Run (2 EC2 Split)</button>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs">
+    <div class="nav-tab active" data-tab="warroom" onclick="switchTab('warroom')">&#9889; Live War Room &amp; Launcher</div>
+    <div class="nav-tab" data-tab="results" onclick="switchTab('results')">&#128202; Test Results &amp; Gate Reports (<span id="runCountBadge">0</span>)</div>
+    <div class="nav-tab" data-tab="compare" onclick="switchTab('compare')">&#9878; Run-vs-Run Regression Compare</div>
+    <div class="nav-tab" data-tab="studio" onclick="switchTab('studio')">&#128221; Config, Dataset &amp; k6 Studio</div>
+    <div class="nav-tab" data-tab="cluster" onclick="switchTab('cluster')">&#128421; 2-EC2 Cluster &amp; Office Setup</div>
+  </nav>
+
+  <main class="main-container">
+    <!-- TAB 1: LIVE WAR ROOM & LAUNCHER -->
+    <section id="tab-warroom">
+      <div class="grid-2">
+        <!-- Left Column: Test Launcher -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">&#128640; Distributed Test Launcher</h3>
+              <span class="badge badge-info" id="launcherModeBadge">Node &rarr; k6 &rarr; Node</span>
+            </div>
+
+            <label>Execution Engine Mode</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px;">
+              <button type="button" id="btnModeMultiPop" class="btn btn-primary" onclick="setExecutionMode('multi-population')">&#128230; Multi-Population Project</button>
+              <button type="button" id="btnModeAiperf" class="btn btn-secondary" onclick="setExecutionMode('aiperf')">&#129302; AI Pipeline (`aiperf.mjs`)</button>
+              <button type="button" id="btnModeDirectK6" class="btn btn-secondary" onclick="setExecutionMode('direct-k6')">&#9889; Single `.js` (`k6 run`)</button>
+            </div>
+
+            <label>Run Identifier (`--run-id`)</label>
+            <input type="text" id="inpRunId" placeholder="Auto-generated if blank (e.g. MULTIPOP_RUN_01)" />
+
+            <!-- MULTI-POPULATION FULL FRAMEWORK PROJECT PANEL -->
+            <div id="multiPopPanel">
+              <div style="background:var(--bg-0);border:1px solid var(--border);border-radius:8px;padding:11px;margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                  <label style="margin:0;">1. Full Framework Project Workspace</label>
+                  <label for="inpUploadFolder" class="btn btn-secondary" style="padding:4px 9px;font-size:11px;margin:0;cursor:pointer;text-transform:none;">&#128193; Upload Project Folder</label>
+                  <input type="file" id="inpUploadFolder" webkitdirectory directory multiple class="hidden" onchange="handleFolderUpload(event)" />
+                </div>
+                <select id="selProjectWorkspace" onchange="onSelectProjectWorkspace()" style="margin-bottom:6px;"></select>
+                <div id="projectTreeSummary" style="font-size:11px;color:var(--text-2);"></div>
+              </div>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <label style="margin:0;">2. Populations &amp; Multi-Injector Allocation</label>
+                <div style="display:flex;gap:6px;">
+                  <button type="button" class="btn btn-secondary" style="padding:3px 8px;font-size:11px;" onclick="addPopulationRow()">+ Add Population</button>
+                  <button type="button" class="btn btn-secondary" style="padding:3px 8px;font-size:11px;" onclick="previewCompositeRunner()">&#128065; Preview k6 Bundle</button>
+                </div>
+              </div>
+
+              <div id="populationsBuilderList" style="max-height:290px;overflow-y:auto;margin-bottom:12px;"></div>
+              <div id="compositePreviewBox" class="hidden" style="margin-bottom:12px;"></div>
+            </div>
+
+            <!-- DIRECT K6 MULTI-SCENARIO PANEL -->
+            <div id="directK6Panel" class="hidden">
+              <label>k6 User-Flow Script (`.js` with `options.scenarios`)</label>
+              <select id="selDirectK6Script" onchange="inspectSelectedK6Script()">
+                <option value="k6/flows/ecommerce-userflows.js">k6/flows/ecommerce-userflows.js (3 User Flows)</option>
+                <option value="k6/flows/microservices-api-suite.js">k6/flows/microservices-api-suite.js (2 API Flows)</option>
+                <option value="k6/main.js">k6/main.js (Framework Entry)</option>
+              </select>
+
+              <label>Detected Scenarios &amp; User-Flow Functions (`options.scenarios`)</label>
+              <div id="k6ScenariosBox" style="background:var(--bg-0);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:12px;"></div>
+
+              <div class="form-row">
+                <div>
+                  <label>2-EC2 Distribution (`--execution-segment`)</label>
+                  <select id="selDirectK6DistMode">
+                    <option value="split-50-50" selected>Split 50/50 Across Both EC2s (0:0.5 &amp; 0.5:1)</option>
+                    <option value="worker-1-only">EC2-Worker-01 Only</option>
+                    <option value="worker-2-only">EC2-Worker-02 Only</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Duration Override (per scenario)</label>
+                  <input type="text" id="inpDirectK6Duration" value="6s" placeholder="e.g. 6s, 30s, 5m" />
+                </div>
+              </div>
+
+              <label>Environment Variables (`-e KEY=VALUE`, comma-separated)</label>
+              <input type="text" id="inpDirectK6Env" value="BASE_URL=http://127.0.0.1:8089,ENV=staging" />
+            </div>
+
+            <!-- AI AGENT PIPELINE PANEL -->
+            <div id="aiperfPanel" class="hidden">
+            <div class="form-row">
+              <div>
+                <label>Workload (`WORKLOAD`)</label>
+                <select id="selWorkload" onchange="onWorkloadChange()">
+                  <option value="plateaus" selected>plateaus (Stepped VUs)</option>
+                  <option value="smoke">smoke (Quick Probe)</option>
+                  <option value="baseline">baseline (1 VU Reference)</option>
+                  <option value="load">load (Ramping Rate)</option>
+                  <option value="stress">stress (High Concurrency)</option>
+                  <option value="spike">spike (Sudden Burst)</option>
+                </select>
+              </div>
+              <div>
+                <label>2-EC2 Distribution Mode</label>
+                <select id="selDistMode">
+                  <option value="split-50-50" selected>Split 50/50 Across Both EC2s (--execution-segment)</option>
+                  <option value="multi-protocol-http-sse">Simultaneous HTTP (EC2 #1) + SSE (EC2 #2)</option>
+                  <option value="worker-1-only">EC2-Worker-01 Only (10.24.1.101)</option>
+                  <option value="worker-2-only">EC2-Worker-02 Only (10.24.2.102)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div>
+                <label>Primary Config (`--config`)</label>
+                <select id="selConfig">
+                  <option value="config/perfpilot.json">config/perfpilot.json (HTTP)</option>
+                  <option value="config/perfpilot-sse.json">config/perfpilot-sse.json (SSE)</option>
+                  <option value="config/default.json">config/default.json (Mock)</option>
+                </select>
+              </div>
+              <div>
+                <label>Release Gates (`--gates`)</label>
+                <select id="selGates">
+                  <option value="config/gates.perfpilot.json">config/gates.perfpilot.json</option>
+                  <option value="config/gates.json">config/gates.json (Strict)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row" id="plateauParamsRow">
+              <div>
+                <label>Plateau VU Levels (`--levels`)</label>
+                <input type="text" id="inpLevels" value="2,6" />
+              </div>
+              <div>
+                <label>Hold Duration per Level (`--hold`)</label>
+                <input type="text" id="inpHold" value="6s" placeholder="e.g. 6s, 5m, 30m" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div>
+                <label>Dataset Override (`--datasets`)</label>
+                <select id="selDataset">
+                  <option value="">Use Config Default</option>
+                  <option value="data/perfpilot-quick.json">data/perfpilot-quick.json</option>
+                  <option value="data/golden.json">data/golden.json</option>
+                </select>
+              </div>
+              <div>
+                <label>QDUL Baseline Run (`--baseline`)</label>
+                <select id="selBaselineRun">
+                  <option value="PP_BASE_HTTP">PP_BASE_HTTP</option>
+                  <option value="">None (Use Level 1)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+              <input type="checkbox" id="chkSkipPreflight" style="width:auto;margin:0;" />
+              <span style="font-size:12px;color:var(--text-1);">Skip Preflight Doctor Probe (`--skip-preflight`)</span>
+            </div>
+            </div>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-primary" style="flex:1;" onclick="startPipelineRun()">&#9654; Launch Distributed Run</button>
+              <button class="btn btn-secondary" id="btnDoctorProbe" onclick="runDoctorCheck()">&#129658; Doctor Check</button>
+              <button class="btn btn-danger" onclick="stopActiveRun()">&#9632; Stop</button>
+            </div>
+
+            <!-- Doctor Output Box -->
+            <div id="doctorResultBox" class="hidden" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);"></div>
+          </div>
+
+          <!-- Active EC2 Worker Split Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">&#128421; Live 2-EC2 Load Generator Telemetry</h3>
+            </div>
+            <div id="warroomWorkerCards"></div>
+          </div>
+        </div>
+
+        <!-- Right Column: 3-Stage Pipeline & Live Charts -->
+        <div>
+          <!-- 3-Stage Node -> k6 -> Node Stepper -->
+          <div class="stepper">
+            <div class="step-box" id="stepStage1">
+              <div class="step-tag">Stage 1 &bull; Node.js Pre-Hook</div>
+              <div class="step-name">1. Preflight (`doctor.mjs`) &amp; Meta</div>
+              <div class="step-desc" id="stepStage1Desc">Validates target endpoint, auth, dataset &amp; writes `run-meta.json`</div>
+            </div>
+            <div class="step-box" id="stepStage2">
+              <div class="step-tag">Stage 2 &bull; Distributed k6</div>
+              <div class="step-name">2. Dual-EC2 Load Execution</div>
+              <div class="step-desc" id="stepStage2Desc">Runs `--execution-segment` across EC2 #1 &amp; #2, streaming `rows.jsonl`</div>
+            </div>
+            <div class="step-box" id="stepStage3">
+              <div class="step-tag">Stage 3 &bull; Node.js Post-Hook</div>
+              <div class="step-name">3. Eval, QDUL, Gates &amp; HTML</div>
+              <div class="step-desc" id="stepStage3Desc">Runs `evaluate.mjs`, `aggregate.mjs`, `gate.mjs` &amp; `report.mjs`</div>
+            </div>
+          </div>
+
+          <!-- Live Metric Cards -->
+          <div class="grid-4" style="margin-bottom:16px;">
+            <div class="stat-card">
+              <div class="stat-label">Completed Turns (`rows.jsonl`)</div>
+              <div class="stat-value" id="liveTotalRows">0</div>
+              <div class="stat-sub" id="liveWorkerSplitSub">EC2-01: 0 | EC2-02: 0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Live E2E Latency (p95 / avg)</div>
+              <div class="stat-value" id="liveE2eP95">-- ms</div>
+              <div class="stat-sub" id="liveTtftSub">TTFT avg: -- ms</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Completion / Det. Pass</div>
+              <div class="stat-value" id="livePassRate">--%</div>
+              <div class="stat-sub" id="liveErrorSub">HTTP 200 OK</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Lexical Correctness / Grounded</div>
+              <div class="stat-value" id="liveQualityScore">--</div>
+              <div class="stat-sub" id="liveStageTimingSub">Plan / Tools / Synth</div>
+            </div>
+          </div>
+
+          <!-- Live Chart: E2E & TTFT Stream -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">&#128200; Real-Time Turn Latency (`e2e_ms` vs `ttft_ms`) &amp; Stage Breakdown across EC2 Nodes</h3>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <button class="btn btn-secondary" style="padding:4px 10px;font-size:11px;" onclick="exportLiveWarroomCsv()">&#128229; Export Live CSV</button>
+                <button class="btn btn-secondary" style="padding:4px 10px;font-size:11px;" onclick="if(overviewState?.activePipeline?.runId){selectedRunId=overviewState.activePipeline.runId;switchTab('results');selectRunDetail(selectedRunId);}">&#128202; Open Full Cloud Report View</button>
+                <span id="liveRunBadge" class="badge badge-info">Ready</span>
+              </div>
+            </div>
+            <div id="liveChartContainer" style="height:210px;width:100%;"></div>
+          </div>
+
+          <!-- Live Streaming Rows Table -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">&#128225; Live Turn Stream (`rows.jsonl` from EC2-Worker-01 &amp; EC2-Worker-02)</h3>
+              <span style="font-size:11px;color:var(--text-2);">Click any turn to inspect full AI Answer &amp; Server Timings</span>
+            </div>
+            <div class="table-wrap" style="max-height:240px;overflow-y:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Worker Node</th>
+                    <th>Level</th>
+                    <th>Prompt ID</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>TTFT</th>
+                    <th>E2E Latency</th>
+                    <th>Stage Timings (Plan/Tool/Synth)</th>
+                    <th>Det. Check</th>
+                    <th>Correctness</th>
+                  </tr>
+                </thead>
+                <tbody id="liveRowsTbody">
+                  <tr><td colspan="10" style="color:var(--text-2);text-align:center;padding:20px;">Click "Quick Demo Run" or "Launch Distributed Run" to watch live turns stream in from both EC2 nodes.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Live Pipeline Console Log -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">&#128187; Pipeline Execution Console (`aiperf.mjs` Output)</h3>
+            </div>
+            <div class="console-box" id="pipelineConsole"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: TEST RESULTS & GATE REPORTS -->
+    <section id="tab-results" class="hidden">
+      <div class="grid-2">
+        <!-- Left List of Runs -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">&#128193; `results/` Run History</h3>
+              <button class="btn btn-secondary" style="padding:5px 10px;font-size:11px;" onclick="loadOverview()">&#8635; Refresh</button>
+            </div>
+            <div id="runsListContainer"></div>
+          </div>
+        </div>
+
+        <!-- Right Detailed Run Inspector -->
+        <div id="runDetailPane">
+          <div class="card">
+            <p style="color:var(--text-2);">Select a run on the left to inspect its levels, QDUL, release gates, stage timings, and individual AI turns.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: RUN-VS-RUN REGRESSION COMPARE -->
+    <section id="tab-compare" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">&#9878; Regression Comparison (`node tools/aiperf.mjs compare &lt;reference&gt; &lt;candidate&gt;`)</h3>
+        </div>
+        <div class="grid-3" style="align-items:end;">
+          <div>
+            <label>Reference Baseline Run</label>
+            <select id="selCompareRef"></select>
+          </div>
+          <div>
+            <label>Candidate Build Run</label>
+            <select id="selCompareCand"></select>
+          </div>
+          <div>
+            <button class="btn btn-primary" style="margin-bottom:12px;width:100%;" onclick="runComparison()">Compare Runs</button>
+          </div>
+        </div>
+        <div id="compareResultContainer" style="margin-top:14px;"></div>
+      </div>
+    </section>
+
+    <!-- TAB 4: CONFIG, DATASET & K6 STUDIO -->
+    <section id="tab-studio" class="hidden">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">&#128196; Framework Files</h3>
+          </div>
+          <div id="studioFileList"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title" id="studioActiveFileTitle">config/perfpilot.json</h3>
+            <button class="btn btn-primary" onclick="saveStudioFile()">&#128190; Save File</button>
+          </div>
+          <textarea id="studioEditor" style="height:520px;font-family:'JetBrains Mono',Consolas,monospace;font-size:12px;line-height:1.5;"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: 2-EC2 CLUSTER & OFFICE SETUP -->
+    <section id="tab-cluster" class="hidden">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">&#128421; Configure 2-EC2 Worker Nodes &amp; Office Path</h3>
+          </div>
+          <label>Framework Workspace Root (`c:\env_qa\perftest-framework-active\ai-agent-perf-framework` in office)</label>
+          <input type="text" id="inpFrameworkRoot" />
+
+          <label>EC2 Worker #1 URL (`--execution-segment 0:0.5`)</label>
+          <input type="text" id="inpWorker1Url" value="http://127.0.0.1:4101" />
+
+          <label>EC2 Worker #2 URL (`--execution-segment 0.5:1`)</label>
+          <input type="text" id="inpWorker2Url" value="http://127.0.0.1:4102" />
+
+          <button class="btn btn-primary" onclick="saveClusterConfig()">Save Cluster Endpoints</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">&#128214; How to Deploy on Your 2 Office EC2 Instances</h3>
+          </div>
+          <p style="color:var(--text-1);margin-top:0;">
+            This exact architecture works on your laptop today (using local ports <code>4101</code> and <code>4102</code>) and deploys onto your 2 office EC2 machines in 3 steps:
+          </p>
+          <ol style="color:var(--text-1);line-height:1.7;padding-left:18px;">
+            <li><strong>On EC2 Instance #1 &amp; EC2 Instance #2:</strong> Start the lightweight Worker Agent:<br/>
+              <code>PORT=4101 node server/worker-agent.mjs</code>
+            </li>
+            <li><strong>Point to Your Office Framework:</strong> Set Framework Workspace Root on the left to:<br/>
+              <code>c:\env_qa\perftest-framework-active\ai-agent-perf-framework</code>
+            </li>
+            <li><strong>Update Worker URLs:</strong> Replace <code>127.0.0.1:4101</code> and <code>127.0.0.1:4102</code> with your 2 EC2 Private IPs (e.g. <code>http://10.24.1.101:4101</code> and <code>http://10.24.2.102:4102</code>).</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal for Inspecting Single AI Turn Row -->
+  <div id="turnModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:100;padding:24px;">
+    <div class="card" style="max-width:780px;width:100%;max-height:85vh;overflow-y:auto;margin:0;">
+      <div class="card-header">
+        <h3 class="card-title" id="modalTurnTitle">Turn Inspector</h3>
+        <button class="btn btn-secondary" onclick="closeTurnModal()">&#10005; Close</button>
+      </div>
+      <div id="modalTurnBody"></div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+  <script src="/run-inspector.js"></script>
+</body>
+</html>

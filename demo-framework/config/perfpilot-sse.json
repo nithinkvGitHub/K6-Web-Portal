@@ -1,0 +1,68 @@
+{
+  "target": {
+    "name": "PerfPilot Agent (SSE Streaming)",
+    "baseUrl": "http://127.0.0.1:8089",
+    "path": "/modules/agent_mcp_bridge/api/agent/stream",
+    "method": "POST",
+    "timeoutMs": 420000,
+    "stream": true,
+    "streamEngine": "xk6-sse",
+    "model": "perfpilot-v2",
+    "auth": { "type": "none" },
+    "headers": { "Accept": "text/event-stream" },
+    "request": {
+      "body": {
+        "model": "{{model}}",
+        "stream": true,
+        "session_id": "{{session_id}}",
+        "prompt": "{{prompt}}"
+      }
+    },
+    "response": {
+      "answerPath": "pass2.answer_markdown",
+      "streamDeltaPath": "text",
+      "streamDeltaEvent": "answer_delta",
+      "promptTokensPath": "usage.prompt_tokens",
+      "completionTokensPath": "usage.completion_tokens",
+      "modelPath": "model",
+      "tracePath": "x_agent.trace_id",
+      "stepsPath": "x_agent.steps",
+      "toolCallsPath": "x_agent.tool_calls",
+      "toolNameKey": "name",
+      "contextsPath": "x_agent.contexts",
+      "citationsPath": "x_agent.citations",
+      "completionPath": "x_agent.status",
+      "completionOk": ["completed"],
+      "timingPaths": {
+        "planning": "x_agent.timings.planning_ms",
+        "tools": "x_agent.timings.tools_ms",
+        "synthesis": "x_agent.timings.synthesis_ms",
+        "total": "x_agent.timings.total_ms"
+      }
+    },
+    "cleanup": {
+      "method": "DELETE",
+      "path": "/sessions/{{session_id}}"
+    }
+  },
+  "datasets": ["data/perfpilot-quick.json", "data/adversarial.json"],
+  "mix": {
+    "simple": 30,
+    "analysis": 35,
+    "agent": 25,
+    "adversarial": 10
+  },
+  "thinkTime": { "minSec": 0.5, "maxSec": 1.5 },
+  "reporting": {
+    "warmupSec": 2,
+    "warmupWorkloads": ["plateaus"],
+    "minSamples": 10,
+    "minPairs": 4,
+    "slo": {
+      "e2e_p95_ms": 300000,
+      "completion_rate": 0.90,
+      "deterministic_pass_rate": 0.85,
+      "qdul_pct_max": 25
+    }
+  }
+}

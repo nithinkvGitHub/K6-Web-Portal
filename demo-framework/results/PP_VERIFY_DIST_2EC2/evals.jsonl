@@ -1,0 +1,4 @@
+{"row_id":"PP_VERIFY_DIST_2EC2_EC2-Worker-01_1","run_id":"PP_VERIFY_DIST_2EC2","prompt_id":"PP-S01","evaluator":"lexical","primary":true,"evaluator_version":"lexical-v1","scores":{"task_completion":1,"correctness":1,"groundedness":0.909}}
+{"row_id":"PP_VERIFY_DIST_2EC2_EC2-Worker-02_1","run_id":"PP_VERIFY_DIST_2EC2","prompt_id":"PP-S01","evaluator":"lexical","primary":true,"evaluator_version":"lexical-v1","scores":{"task_completion":1,"correctness":1,"groundedness":0.909}}
+{"row_id":"PP_VERIFY_DIST_2EC2_EC2-Worker-01_2","run_id":"PP_VERIFY_DIST_2EC2","prompt_id":"PP-S03","evaluator":"lexical","primary":true,"evaluator_version":"lexical-v1","scores":{"task_completion":1,"correctness":1,"groundedness":0.868}}
+{"row_id":"PP_VERIFY_DIST_2EC2_EC2-Worker-02_2","run_id":"PP_VERIFY_DIST_2EC2","prompt_id":"PP-S03","evaluator":"lexical","primary":true,"evaluator_version":"lexical-v1","scores":{"task_completion":1,"correctness":1,"groundedness":0.868}}

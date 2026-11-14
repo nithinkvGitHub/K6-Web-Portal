@@ -1,0 +1,65 @@
+{
+  "id": "enterprise-omni-framework",
+  "name": "Enterprise Omni-Channel + AI Perf Framework",
+  "version": "2.4.0",
+  "description": "Full multi-file k6 + Node framework with shared lib/, CSV/JSON datasets, environment configs, and 4 modular User-Flow populations.",
+  "entrypoints": [
+    { "id": "flow_browse", "name": "Browse & Search Catalog Flow", "file": "flows/catalog-search.js", "exec": "catalogSearchFlow", "protocol": "HTTP", "defaultVus": 10 },
+    { "id": "flow_checkout", "name": "Cart & Checkout Payment Flow", "file": "flows/checkout-payment.js", "exec": "checkoutPaymentFlow", "protocol": "HTTP", "defaultVus": 6 },
+    { "id": "flow_ai_rag", "name": "AI Copilot RAG Streaming Flow", "file": "flows/ai-assistant-rag.js", "exec": "aiCopilotSseFlow", "protocol": "SSE", "defaultVus": 8 },
+    { "id": "flow_auth", "name": "OAuth2 Token & Session Flow", "file": "flows/login-session.js", "exec": "oauthLoginFlow", "protocol": "HTTP", "defaultVus": 4 }
+  ],
+  "datasets": [
+    "data/users.csv",
+    "data/products.json",
+    "data/ai-prompts.json"
+  ],
+  "configs": [
+    "config/staging.json",
+    "config/production-slo.json"
+  ],
+  "populationsPreset": [
+    {
+      "populationId": "POP_RETAIL_BUYERS",
+      "name": "Pop 1: Retail Web Buyers (Browse + Checkout)",
+      "flowFile": "flows/catalog-search.js",
+      "execFn": "catalogSearchFlow",
+      "protocol": "HTTP",
+      "executor": "ramping-vus",
+      "vus": 10,
+      "duration": "8s",
+      "dataset": "data/users.csv",
+      "injectorDistribution": "50-50",
+      "injector1Pct": 50,
+      "injector2Pct": 50
+    },
+    {
+      "populationId": "POP_CHECKOUT_TX",
+      "name": "Pop 2: High-Value Checkout Transactions",
+      "flowFile": "flows/checkout-payment.js",
+      "execFn": "checkoutPaymentFlow",
+      "protocol": "HTTP",
+      "executor": "constant-vus",
+      "vus": 6,
+      "duration": "8s",
+      "dataset": "data/products.json",
+      "injectorDistribution": "injector-1",
+      "injector1Pct": 100,
+      "injector2Pct": 0
+    },
+    {
+      "populationId": "POP_AI_SSE_USERS",
+      "name": "Pop 3: AI Copilot SSE Streaming Users",
+      "flowFile": "flows/ai-assistant-rag.js",
+      "execFn": "aiCopilotSseFlow",
+      "protocol": "SSE",
+      "executor": "constant-vus",
+      "vus": 8,
+      "duration": "8s",
+      "dataset": "data/ai-prompts.json",
+      "injectorDistribution": "injector-2",
+      "injector1Pct": 0,
+      "injector2Pct": 100
+    }
+  ]
+}

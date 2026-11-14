@@ -1,0 +1,12 @@
+{
+  "run_id": "K6_ECOMMERCE_USERFLOWS_DIST",
+  "workload": "k6:ecommerce-userflows.js",
+  "config_file": "config/default.json",
+  "started_at": "2026-11-14T06:40:00.000Z",
+  "workers_used": [
+    "EC2-Worker-01",
+    "EC2-Worker-02"
+  ],
+  "execution_mode": "direct-k6-split-50-50",
+  "k6": "v2.3.0 (xk6-sse v0.2.0)"
+}

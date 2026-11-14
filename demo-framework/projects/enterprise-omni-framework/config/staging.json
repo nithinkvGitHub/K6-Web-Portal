@@ -1,0 +1,9 @@
+{
+  "environment": "staging",
+  "baseUrl": "http://127.0.0.1:8089",
+  "slo": {
+    "http_p95_ms": 1800,
+    "sse_p95_ms": 2500,
+    "error_rate_max": 0.02
+  }
+}

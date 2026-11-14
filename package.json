@@ -1,0 +1,15 @@
+{
+  "name": "aiperf-cloud-orchestrator",
+  "version": "1.0.0",
+  "description": "Grafana Cloud k6-style Distributed Web UI & 2-EC2 Orchestrator for AI Agent Performance Testing (Node -> k6 -> Node)",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.mjs",
+    "mock": "node demo-framework/mock/mock-agent.mjs",
+    "doctor": "node demo-framework/tools/aiperf.mjs doctor",
+    "smoke": "node demo-framework/tools/aiperf.mjs run smoke"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

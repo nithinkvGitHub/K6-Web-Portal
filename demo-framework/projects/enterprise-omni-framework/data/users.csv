@@ -1,0 +1,5 @@
+user_id,tier,region
+USR_9001,platinum,us-east
+USR_9002,gold,eu-west
+USR_9003,enterprise,ap-south
+USR_9004,silver,us-west

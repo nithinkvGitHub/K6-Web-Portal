@@ -1,0 +1,4 @@
+[
+  { "id": "AI-P01", "prompt": "Summarize cluster CPU and memory utilization across nodes." },
+  { "id": "AI-P02", "prompt": "Analyze checkout-service p95 latency bottleneck in New Relic." }
+]

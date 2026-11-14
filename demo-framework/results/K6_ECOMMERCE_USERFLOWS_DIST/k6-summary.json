@@ -1,0 +1,27 @@
+{
+  "metrics": {
+    "agent_e2e_duration": {
+      "values": {
+        "avg": 451,
+        "med": 439,
+        "p(95)": 623,
+        "p(99)": 624
+      }
+    },
+    "agent_completion_rate": {
+      "values": {
+        "rate": 1
+      }
+    },
+    "deterministic_pass_rate": {
+      "values": {
+        "rate": 1
+      }
+    },
+    "http_req_failed": {
+      "values": {
+        "rate": 0
+      }
+    }
+  }
+}

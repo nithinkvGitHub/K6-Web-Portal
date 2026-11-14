@@ -1,0 +1,442 @@
+{
+  "run_id": "PP_VERIFY_DIST_2EC2",
+  "created_at": "2026-11-14T07:16:33.934Z",
+  "workload": "smoke",
+  "config_file": "config/perfpilot-sse.json",
+  "target_name": "PerfPilot Agent (SSE Streaming)",
+  "model": "perfpilot-v2",
+  "stream": true,
+  "stream_engine": "xk6-sse",
+  "workers_used": [
+    "EC2-Worker-01",
+    "EC2-Worker-02"
+  ],
+  "execution_mode": "split-50-50",
+  "rows": 4,
+  "steady_rows": 4,
+  "evaluated_rows": 4,
+  "levels": [
+    {
+      "level": 1,
+      "n": 4,
+      "low_sample": true,
+      "in_flight_avg": 0.9,
+      "in_flight_peak": 1,
+      "e2e_p50_ms": 914,
+      "e2e_p95_ms": 959,
+      "e2e_p99_ms": 959,
+      "e2e_avg_ms": 930,
+      "ttft_p50_ms": 226,
+      "ttft_p95_ms": 286,
+      "completion_rate": 1,
+      "http_error_rate": 0,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 1,
+      "correctness_avg": 1,
+      "groundedness_avg": 0.888,
+      "steps_avg": 2.5,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.00073,
+      "qdul_pct_max": 0,
+      "worker_distribution": {
+        "EC2-Worker-01": 2,
+        "EC2-Worker-02": 2
+      },
+      "stage_timings_ms": {
+        "planning_avg": 222,
+        "tools_avg": 177,
+        "synthesis_avg": 332
+      }
+    }
+  ],
+  "categories": {
+    "simple": {
+      "level": 1,
+      "n": 2,
+      "low_sample": true,
+      "in_flight_avg": 0.9,
+      "in_flight_peak": 1,
+      "e2e_p50_ms": 912,
+      "e2e_p95_ms": 914,
+      "e2e_p99_ms": 914,
+      "e2e_avg_ms": 913,
+      "ttft_p50_ms": 226,
+      "ttft_p95_ms": 234,
+      "completion_rate": 1,
+      "http_error_rate": 0,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 1,
+      "correctness_avg": 1,
+      "groundedness_avg": 0.909,
+      "steps_avg": 2,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.00074,
+      "qdul_pct_max": 0,
+      "worker_distribution": {
+        "EC2-Worker-01": 1,
+        "EC2-Worker-02": 1
+      },
+      "stage_timings_ms": {
+        "planning_avg": 219,
+        "tools_avg": 185,
+        "synthesis_avg": 312
+      }
+    },
+    "analysis": {
+      "level": 1,
+      "n": 2,
+      "low_sample": true,
+      "in_flight_avg": 0.9,
+      "in_flight_peak": 1,
+      "e2e_p50_ms": 933,
+      "e2e_p95_ms": 959,
+      "e2e_p99_ms": 959,
+      "e2e_avg_ms": 946,
+      "ttft_p50_ms": 215,
+      "ttft_p95_ms": 286,
+      "completion_rate": 1,
+      "http_error_rate": 0,
+      "timeout_rate": 0,
+      "deterministic_pass_rate": 1,
+      "correctness_avg": 1,
+      "groundedness_avg": 0.868,
+      "steps_avg": 3,
+      "tool_failure_rate": 0,
+      "critical_failures": 0,
+      "cost_avg": 0.00071,
+      "qdul_pct_max": 0,
+      "worker_distribution": {
+        "EC2-Worker-01": 1,
+        "EC2-Worker-02": 1
+      },
+      "stage_timings_ms": {
+        "planning_avg": 226,
+        "tools_avg": 169,
+        "synthesis_avg": 352
+      }
+    }
+  },
+  "overall": {
+    "level": 1,
+    "n": 4,
+    "low_sample": true,
+    "in_flight_avg": 0.9,
+    "in_flight_peak": 1,
+    "e2e_p50_ms": 914,
+    "e2e_p95_ms": 959,
+    "e2e_p99_ms": 959,
+    "e2e_avg_ms": 930,
+    "ttft_p50_ms": 226,
+    "ttft_p95_ms": 286,
+    "completion_rate": 1,
+    "http_error_rate": 0,
+    "timeout_rate": 0,
+    "deterministic_pass_rate": 1,
+    "correctness_avg": 1,
+    "groundedness_avg": 0.888,
+    "steps_avg": 2.5,
+    "tool_failure_rate": 0,
+    "critical_failures": 0,
+    "cost_avg": 0.00073,
+    "qdul_pct_max": 0,
+    "worker_distribution": {
+      "EC2-Worker-01": 2,
+      "EC2-Worker-02": 2
+    },
+    "stage_timings_ms": {
+      "planning_avg": 222,
+      "tools_avg": 177,
+      "synthesis_avg": 332
+    }
+  },
+  "capacity": {
+    "max_passing_level": 1,
+    "broke_at_level": null,
+    "broke_reason": null,
+    "slo": {
+      "e2e_p95_ms": 300000,
+      "completion_rate": 0.9,
+      "deterministic_pass_rate": 0.85,
+      "qdul_pct_max": 25
+    }
+  },
+  "timeline": [
+    {
+      "bucket": 1,
+      "ts": "2026-11-14T07:16:35.725Z",
+      "label": "+0s",
+      "requests": 2,
+      "e2e_p95_ms": 914,
+      "ttft_p95_ms": 234,
+      "completion_rate": 1,
+      "correctness_avg": 1
+    },
+    {
+      "bucket": 4,
+      "ts": "2026-11-14T07:16:36.475Z",
+      "label": "+1s",
+      "requests": 2,
+      "e2e_p95_ms": 959,
+      "ttft_p95_ms": 286,
+      "completion_rate": 1,
+      "correctness_avg": 1
+    }
+  ],
+  "warnings": [
+    "No QDUL baseline: run a baseline run and pass --baseline <dir>, or use the plateaus profile with >= 2 levels.",
+    "Target level 1 has only 4 rows (< 10); percentile gates have wider confidence intervals."
+  ],
+  "gate": {
+    "name": "PerfPilot Provisional Gates",
+    "passed": true,
+    "results": [
+      {
+        "metric": "e2e_p95_ms",
+        "op": "<=",
+        "value": 300000,
+        "label": "E2E Latency p95 <= 300s",
+        "actual": 959,
+        "status": "PASS"
+      },
+      {
+        "metric": "http_error_rate",
+        "op": "<=",
+        "value": 0.05,
+        "label": "HTTP Error Rate <= 5%",
+        "actual": 0,
+        "status": "PASS"
+      },
+      {
+        "metric": "timeout_rate",
+        "op": "<=",
+        "value": 0.05,
+        "label": "Timeout Rate <= 5%",
+        "actual": 0,
+        "status": "PASS"
+      },
+      {
+        "metric": "completion_rate",
+        "op": ">=",
+        "value": 0.9,
+        "label": "Completion Rate >= 90%",
+        "actual": 1,
+        "status": "PASS"
+      },
+      {
+        "metric": "tool_failure_rate",
+        "op": "<=",
+        "value": 0.1,
+        "label": "Tool Call Failure Rate <= 10%",
+        "actual": 0,
+        "status": "PASS"
+      },
+      {
+        "metric": "deterministic_pass_rate",
+        "op": ">=",
+        "value": 0.8,
+        "label": "Deterministic Pass Rate >= 80%",
+        "actual": 1,
+        "status": "PASS"
+      },
+      {
+        "metric": "critical_failures",
+        "op": "==",
+        "value": 0,
+        "label": "Zero Critical Safety Failures",
+        "actual": 0,
+        "status": "PASS"
+      },
+      {
+        "metric": "qdul_pct_max",
+        "op": "<=",
+        "value": 25,
+        "label": "Quality Drop Under Load (QDUL) <= 25%",
+        "actual": 0,
+        "status": "PASS"
+      }
+    ]
+  },
+  "slowest": [
+    {
+      "aiperf": 1,
+      "row_id": "PP_VERIFY_DIST_2EC2_EC2-Worker-02_2",
+      "run_id": "PP_VERIFY_DIST_2EC2",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "0.5:1",
+      "ts": "2026-11-14T07:16:36.690Z",
+      "workload": "smoke",
+      "scenario_id": "smoke_lvl_1",
+      "load_level": 1,
+      "prompt_id": "PP-S03",
+      "category": "analysis",
+      "turn": 1,
+      "session_id": "S_EC2Worker02_1_1a1d8ea4b13",
+      "trace_id": "tr_mwg2oa3a_8oazyz",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 215,
+      "e2e_ms": 959,
+      "steps": 3,
+      "tool_calls": [
+        "query_newrelic_nrql",
+        "get_neoload_sla_summary"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "correctness": 1,
+      "groundedness": 0.868,
+      "answer": "Based on New Relic APM and NeoLoad telemetry, the checkout-service p95 latency is 1,420ms caused by PostgreSQL connection pool exhaustion under 50 VUs [doc:apm-trace-99].",
+      "contexts": [
+        "Telemetry report: checkout-service p95 latency reached 1,420ms during the load test due to PostgreSQL connection pool exhaustion under 50 VUs."
+      ],
+      "prompt_tokens": 21,
+      "completion_tokens": 43,
+      "est_cost": 0.00071,
+      "vars": {
+        "client_id": "CL_1002"
+      },
+      "server_timing": {
+        "planning_ms": 198,
+        "tools_ms": 203,
+        "synthesis_ms": 352,
+        "total_ms": 753
+      }
+    },
+    {
+      "aiperf": 1,
+      "row_id": "PP_VERIFY_DIST_2EC2_EC2-Worker-01_2",
+      "run_id": "PP_VERIFY_DIST_2EC2",
+      "worker_id": "EC2-Worker-01",
+      "execution_segment": "0:0.5",
+      "ts": "2026-11-14T07:16:36.659Z",
+      "workload": "smoke",
+      "scenario_id": "smoke_lvl_1",
+      "load_level": 1,
+      "prompt_id": "PP-S03",
+      "category": "analysis",
+      "turn": 1,
+      "session_id": "S_EC2Worker01_1_1a1d8ea4b0d",
+      "trace_id": "tr_mwg2oa34_iu6xdk",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 286,
+      "e2e_ms": 933,
+      "steps": 3,
+      "tool_calls": [
+        "query_newrelic_nrql",
+        "get_neoload_sla_summary"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "correctness": 1,
+      "groundedness": 0.868,
+      "answer": "Based on New Relic APM and NeoLoad telemetry, the checkout-service p95 latency is 1,420ms caused by PostgreSQL connection pool exhaustion under 50 VUs [doc:apm-trace-99].",
+      "contexts": [
+        "Telemetry report: checkout-service p95 latency reached 1,420ms during the load test due to PostgreSQL connection pool exhaustion under 50 VUs."
+      ],
+      "prompt_tokens": 21,
+      "completion_tokens": 43,
+      "est_cost": 0.00071,
+      "vars": {
+        "client_id": "CL_1002"
+      },
+      "server_timing": {
+        "planning_ms": 253,
+        "tools_ms": 134,
+        "synthesis_ms": 351,
+        "total_ms": 738
+      }
+    },
+    {
+      "aiperf": 1,
+      "row_id": "PP_VERIFY_DIST_2EC2_EC2-Worker-02_1",
+      "run_id": "PP_VERIFY_DIST_2EC2",
+      "worker_id": "EC2-Worker-02",
+      "execution_segment": "0.5:1",
+      "ts": "2026-11-14T07:16:35.731Z",
+      "workload": "smoke",
+      "scenario_id": "smoke_lvl_1",
+      "load_level": 1,
+      "prompt_id": "PP-S01",
+      "category": "simple",
+      "turn": 1,
+      "session_id": "S_EC2Worker02_1_1a1d8ea4781",
+      "trace_id": "tr_mwg2o9dx_ixkilx",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 226,
+      "e2e_ms": 914,
+      "steps": 2,
+      "tool_calls": [
+        "fetch_cluster_metrics"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "correctness": 1,
+      "groundedness": 0.909,
+      "answer": "The PerfPilot analysis completed successfully. CPU utilization averaged 58% and memory utilization stayed below 72% across all cluster nodes with 99.4% completion [doc:cluster-report].",
+      "contexts": [
+        "Cluster report: CPU utilization averaged 58% and memory utilization stayed below 72% across all cluster nodes with 99.4% completion."
+      ],
+      "prompt_tokens": 17,
+      "completion_tokens": 46,
+      "est_cost": 0.00074,
+      "vars": {
+        "client_id": "CL_1001"
+      },
+      "server_timing": {
+        "planning_ms": 220,
+        "tools_ms": 175,
+        "synthesis_ms": 292,
+        "total_ms": 687
+      }
+    },
+    {
+      "aiperf": 1,
+      "row_id": "PP_VERIFY_DIST_2EC2_EC2-Worker-01_1",
+      "run_id": "PP_VERIFY_DIST_2EC2",
+      "worker_id": "EC2-Worker-01",
+      "execution_segment": "0:0.5",
+      "ts": "2026-11-14T07:16:35.725Z",
+      "workload": "smoke",
+      "scenario_id": "smoke_lvl_1",
+      "load_level": 1,
+      "prompt_id": "PP-S01",
+      "category": "simple",
+      "turn": 1,
+      "session_id": "S_EC2Worker01_1_1a1d8ea477c",
+      "trace_id": "tr_mwg2o9dw_if8g71",
+      "completion_status": "completed",
+      "http_status": 200,
+      "ttft_ms": 234,
+      "e2e_ms": 912,
+      "steps": 2,
+      "tool_calls": [
+        "fetch_cluster_metrics"
+      ],
+      "det_pass": true,
+      "det_failed": [],
+      "correctness": 1,
+      "groundedness": 0.909,
+      "answer": "The PerfPilot analysis completed successfully. CPU utilization averaged 58% and memory utilization stayed below 72% across all cluster nodes with 99.4% completion [doc:cluster-report].",
+      "contexts": [
+        "Cluster report: CPU utilization averaged 58% and memory utilization stayed below 72% across all cluster nodes with 99.4% completion."
+      ],
+      "prompt_tokens": 17,
+      "completion_tokens": 46,
+      "est_cost": 0.00074,
+      "vars": {
+        "client_id": "CL_1001"
+      },
+      "server_timing": {
+        "planning_ms": 217,
+        "tools_ms": 195,
+        "synthesis_ms": 332,
+        "total_ms": 744
+      }
+    }
+  ],
+  "failures": []
+}

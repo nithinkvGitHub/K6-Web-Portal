@@ -1,0 +1,12 @@
+{
+  "run_id": "PP_PLAT_5_10_25_DIST",
+  "workload": "plateaus",
+  "config_file": "config/perfpilot-sse.json",
+  "started_at": "2026-11-13T14:20:00.000Z",
+  "workers_used": [
+    "EC2-Worker-01",
+    "EC2-Worker-02"
+  ],
+  "execution_mode": "distributed-50-50",
+  "k6": "v2.3.0 (xk6-sse v0.2.0)"
+}
