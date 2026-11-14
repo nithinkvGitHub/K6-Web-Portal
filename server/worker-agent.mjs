@@ -3,20 +3,29 @@ import os from 'node:os';
 import { executeWorkerSegment } from '../demo-framework/tools/aiperf.mjs';
 import { executeDirectK6Segment } from '../demo-framework/tools/direct-k6-runner.mjs';
 import { executePopulationSegmentOnWorker } from '../demo-framework/tools/population-orchestrator.mjs';
+import { sampleHostResources } from './stats-engine.mjs';
+import { detectK6Binary } from './k6-cli-bridge.mjs';
 
 export function startWorkerAgent({
   workerId = 'EC2-Worker-01',
   port = 4101,
   region = 'ap-south-1a',
   instanceType = 'c6i.2xlarge',
-  privateIp = '10.24.1.101'
+  privateIp = '127.0.0.1',
+  isLocalHost = false,
+  bindHost = process.env.BIND_HOST || '127.0.0.1'
 }) {
+  const initialRes = sampleHostResources();
+  const k6Info = detectK6Binary();
+
   let state = {
     workerId,
     port,
     region,
     instanceType,
     privateIp,
+    isLocalHost,
+    hostname: os.hostname(),
     status: 'idle', // idle | running | stopping
     currentRunId: null,
     executionSegment: null,
@@ -24,13 +33,24 @@ export function startWorkerAgent({
     loadLevel: 0,
     rowsCompleted: 0,
     lastRowTs: null,
-    cpuPct: 12,
-    memPct: 34,
+    cpuPct: initialRes.cpuPct,
+    memPct: initialRes.memPct,
+    fileHandles: initialRes.fileHandles,
+    k6Available: k6Info.available,
+    k6Version: k6Info.version,
+    engineMode: k6Info.available ? 'k6-cli-native' : 'node-http-measured',
     startedAt: new Date().toISOString()
   };
 
   let abortFlag = false;
   const sseSubscribers = new Set();
+
+  function refreshHostTelemetry() {
+    const res = sampleHostResources();
+    state.cpuPct = res.cpuPct;
+    state.memPct = res.memPct;
+    state.fileHandles = res.fileHandles;
+  }
 
   function broadcastEvent(eventType, payload) {
     const msg = `event: ${eventType}\ndata: ${JSON.stringify(payload)}\n\n`;
@@ -44,8 +64,9 @@ export function startWorkerAgent({
   }
 
   const server = http.createServer(async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers', '*');
+    const allowedOrigin = process.env.CORS_ORIGIN || '*';
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-AIPerf-Token');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
 
     if (req.method === 'OPTIONS') {
@@ -54,19 +75,28 @@ export function startWorkerAgent({
       return;
     }
 
+    // Optional token authentication when AIPERF_TOKEN is set
+    const requiredToken = process.env.AIPERF_TOKEN;
+    if (requiredToken && req.url !== '/health') {
+      const provided =
+        req.headers['x-aiperf-token'] ||
+        String(req.headers['authorization'] || '').replace(/^Bearer\s+/i, '');
+      if (provided !== requiredToken) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Unauthorized worker token' }));
+        return;
+      }
+    }
+
     if (req.method === 'GET' && req.url === '/health') {
-      state.cpuPct = state.status === 'running'
-        ? Math.min(94, 38 + state.activeVus * 6 + Math.round(Math.random() * 8))
-        : 8 + Math.round(Math.random() * 6);
-      state.memPct = state.status === 'running'
-        ? Math.min(88, 42 + state.activeVus * 3)
-        : 32;
+      refreshHostTelemetry();
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: true, ...state, hostname: os.hostname() }));
       return;
     }
 
     if (req.method === 'GET' && req.url === '/stream') {
+      refreshHostTelemetry();
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
@@ -79,8 +109,13 @@ export function startWorkerAgent({
     }
 
     if (req.method === 'POST' && req.url === '/job/stop') {
+      const stoppedRunId = state.currentRunId;
       abortFlag = true;
-      state.status = 'stopping';
+      state.status = 'idle';
+      state.activeVus = 0;
+      state.loadLevel = 0;
+      refreshHostTelemetry();
+      broadcastEvent('aborted', { workerId, runId: stoppedRunId, rowsCompleted: state.rowsCompleted });
       broadcastEvent('status', state);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: true, state }));
@@ -104,13 +139,14 @@ export function startWorkerAgent({
       state.executionSegment = job.segment || '0:1';
       state.rowsCompleted = 0;
       state.activeVus = 1;
+      refreshHostTelemetry();
       broadcastEvent('status', state);
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok: true, started: true, workerId, runId: job.runId }));
+      res.end(JSON.stringify({ ok: true, started: true, workerId, runId: job.runId, engineMode: state.engineMode }));
 
-      // Execute segment asynchronously and stream rows (supports Multi-Population Project, Direct k6, and AI Pipeline)
       const onRowCb = (row) => {
+        if (abortFlag) return;
         state.rowsCompleted++;
         state.lastRowTs = row.ts;
         broadcastEvent('row', row);
@@ -118,7 +154,7 @@ export function startWorkerAgent({
       const onStatusCb = (st) => {
         state.activeVus = st.activeVus;
         state.loadLevel = st.loadLevel;
-        state.cpuPct = st.activeVus > 0 ? Math.min(95, 35 + st.activeVus * 7) : 11;
+        refreshHostTelemetry();
         broadcastEvent('status', state);
       };
 
@@ -127,6 +163,7 @@ export function startWorkerAgent({
             runId: job.runId,
             workerId,
             workerIndex: Number(job.workerIndex || 0),
+            workerCount: Number(job.workerCount || 2),
             projectId: job.projectId || 'enterprise-omni-framework',
             populations: job.populations || [],
             baseUrl: job.baseUrl || 'http://127.0.0.1:8089',
@@ -140,6 +177,7 @@ export function startWorkerAgent({
               runId: job.runId,
               workerId,
               segment: job.segment || '0:1',
+              segmentSequence: job.segmentSequence || '0,1',
               segmentRatio: Number(job.segmentRatio || 1.0),
               scriptRelPath: job.scriptRelPath || 'k6/flows/ecommerce-userflows.js',
               selectedScenarios: job.selectedScenarios || null,
@@ -174,12 +212,18 @@ export function startWorkerAgent({
           state.status = 'idle';
           state.activeVus = 0;
           state.loadLevel = 0;
-          broadcastEvent('completed', { workerId, runId: job.runId, rowsCompleted: state.rowsCompleted });
+          refreshHostTelemetry();
+          if (abortFlag) {
+            broadcastEvent('aborted', { workerId, runId: job.runId, rowsCompleted: state.rowsCompleted });
+          } else {
+            broadcastEvent('completed', { workerId, runId: job.runId, rowsCompleted: state.rowsCompleted });
+          }
           broadcastEvent('status', state);
         })
         .catch((err) => {
           state.status = 'idle';
           state.activeVus = 0;
+          refreshHostTelemetry();
           broadcastEvent('error', { workerId, runId: job.runId, error: err.message });
           broadcastEvent('status', state);
         });
@@ -198,7 +242,7 @@ export function startWorkerAgent({
         reject(err);
       }
     });
-    server.listen(port, '127.0.0.1', () => {
+    server.listen(port, bindHost, () => {
       resolve({ server, port, workerId, alreadyRunning: false, getState: () => state });
     });
   });

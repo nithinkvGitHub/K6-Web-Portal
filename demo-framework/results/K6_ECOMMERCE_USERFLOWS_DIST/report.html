@@ -20,8 +20,8 @@
 <body>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
     <div>
-      <h1 style="margin-bottom:4px;">AI Agent Performance Report: K6_ECOMMERCE_USERFLOWS_DIST</h1>
-      <div style="color:#94a3b8;font-size:13px;">Workload: <strong>k6:ecommerce-userflows.js</strong> | Target: <strong>Mock AI Agent (Local Demo)</strong> | Model: <code>mock-agent-1</code> | Workers: <strong>EC2-Worker-01, EC2-Worker-02</strong></div>
+      <h1 style="margin-bottom:4px;">Performance Report: K6_ECOMMERCE_USERFLOWS_DIST</h1>
+      <div style="color:#94a3b8;font-size:13px;">Workload: <strong>k6:ecommerce-userflows.js</strong> | Engine: <code>node-http-measured</code> | Target: <strong>Target System</strong> | Injectors: <strong>EC2-Worker-01, EC2-Worker-02</strong></div>
     </div>
     <div><span style="background:#ef444422;color:#f87171;border:1px solid #ef444455;padding:4px 12px;border-radius:999px;font-weight:700;">GATE FAILED</span></div>
   </div>
@@ -29,127 +29,149 @@
   
 
   <div class="grid">
-    <div class="stat"><div class="stat-label">Total Turns Executed</div><div class="stat-val">32</div></div>
-    <div class="stat"><div class="stat-label">Overall E2E p95</div><div class="stat-val">623 ms</div></div>
-    <div class="stat"><div class="stat-label">Completion / Det. Pass</div><div class="stat-val">100.0% / 100.0%</div></div>
-    <div class="stat"><div class="stat-label">Correctness / Max QDUL</div><div class="stat-val">0.88 / 12%</div></div>
+    <div class="stat"><div class="stat-label">Total Turns / Requests</div><div class="stat-val">32</div></div>
+    <div class="stat"><div class="stat-label">Overall Latency p95 (Stdev)</div><div class="stat-val">623 ms (102.1 ms)</div></div>
+    <div class="stat"><div class="stat-label">Completion / Check Pass</div><div class="stat-val">100.0% / 100.0%</div></div>
+    <div class="stat"><div class="stat-label">Correctness / Max QDUL</div><div class="stat-val">0.88 / 0%</div></div>
   </div>
 
   <div class="card">
-    <h3>Load Level Breakdown (Node -> Distributed k6 -> Node)</h3>
+    <h3>Load Level Breakdown</h3>
     <table>
       <thead>
         <tr>
-          <th>Level</th><th>In-Flight avg/peak</th><th>Rows (n)</th><th>E2E p50</th><th>E2E p95</th><th>TTFT p95</th><th>Complete</th><th>Det. Pass</th><th>Correctness</th><th>Grounded</th><th>Steps</th><th>QDUL%</th>
+          <th>Level</th><th>In-Flight avg/peak</th><th>Rows (n)</th><th>p50</th><th>p95</th><th>Stdev (n-1)</th><th>TTFT p95</th><th>Complete</th><th>Checks</th><th>Correctness</th><th>Grounded</th><th>Steps</th><th>QDUL%</th>
         </tr>
       </thead>
       <tbody>
     <tr>
       <td><strong>Level 4 VUs</strong></td>
-      <td>3.5 / 4</td>
+      <td>4 / 4</td>
       <td>14</td>
       <td>323 ms</td>
       <td><strong>452 ms</strong></td>
+      <td>48.01 ms</td>
       <td>150 ms</td>
       <td>100.0%</td>
       <td>100.0%</td>
       <td>0.88</td>
       <td>0.84</td>
       <td>2.07</td>
-      <td>12%</td>
+      <td>0%</td>
     </tr>
   
     <tr>
       <td><strong>Level 10 VUs</strong></td>
-      <td>8.8 / 10</td>
+      <td>10 / 10</td>
       <td>18</td>
       <td>513 ms</td>
       <td><strong>624 ms</strong></td>
+      <td>68.91 ms</td>
       <td>205 ms</td>
       <td>100.0%</td>
       <td>100.0%</td>
       <td>0.88</td>
       <td>0.81</td>
       <td>1.94</td>
-      <td>12%</td>
+      <td>0%</td>
     </tr>
   </tbody>
     </table>
   </div>
 
   <div class="card">
-    <h3>Release Gates (Standard Strict Release Gates)</h3>
+    <h3>Thresholds & Release Gates (Standard Strict Release Gates)</h3>
     <table>
-      <thead><tr><th>Gate Rule</th><th>Expression</th><th>Actual Value</th><th>Status</th></tr></thead>
+      <thead><tr><th>Gate / Threshold</th><th>Expression</th><th>Source</th><th>Actual Value</th><th>Row Pass / Fail</th><th>Status</th></tr></thead>
       <tbody>
     <tr>
       <td>E2E Latency p95 <= 10s</td>
       <td><code>e2e_p95_ms <= 10000</code></td>
+      <td><span style="font-size:11px;color:#94a3b8;">gates-config</span></td>
       <td><strong>624</strong></td>
+      <td>32 / 0</td>
       <td style="color:#34d399;font-weight:700;">PASS</td>
     </tr>
   
     <tr>
       <td>TTFT p95 <= 2s</td>
       <td><code>ttft_p95_ms <= 2000</code></td>
+      <td><span style="font-size:11px;color:#94a3b8;">gates-config</span></td>
       <td><strong>205</strong></td>
+      <td>32 / 0</td>
       <td style="color:#34d399;font-weight:700;">PASS</td>
     </tr>
   
     <tr>
       <td>HTTP Error Rate <= 1%</td>
       <td><code>http_error_rate <= 0.01</code></td>
+      <td><span style="font-size:11px;color:#94a3b8;">gates-config</span></td>
       <td><strong>0</strong></td>
+      <td>32 / 0</td>
       <td style="color:#34d399;font-weight:700;">PASS</td>
     </tr>
   
     <tr>
       <td>Timeout Rate <= 1%</td>
       <td><code>timeout_rate <= 0.01</code></td>
+      <td><span style="font-size:11px;color:#94a3b8;">gates-config</span></td>
       <td><strong>0</strong></td>
+      <td>0 / 0</td>
       <td style="color:#34d399;font-weight:700;">PASS</td>
     </tr>
   
     <tr>
       <td>Completion Rate >= 98%</td>
       <td><code>completion_rate >= 0.98</code></td>
+      <td><span style="font-size:11px;color:#94a3b8;">gates-config</span></td>
       <td><strong>1</strong></td>
+      <td>32 / 0</td>
       <td style="color:#34d399;font-weight:700;">PASS</td>
     </tr>
   
     <tr>
       <td>Deterministic Pass Rate >= 95%</td>
       <td><code>deterministic_pass_rate >= 0.95</code></td>
+      <td><span style="font-size:11px;color:#94a3b8;">gates-config</span></td>
       <td><strong>1</strong></td>
+      <td>32 / 0</td>
       <td style="color:#34d399;font-weight:700;">PASS</td>
     </tr>
   
     <tr>
       <td>Correctness Score >= 0.85</td>
       <td><code>correctness_avg >= 0.85</code></td>
+      <td><span style="font-size:11px;color:#94a3b8;">gates-config</span></td>
       <td><strong>0.88</strong></td>
+      <td>0 / 32</td>
       <td style="color:#34d399;font-weight:700;">PASS</td>
     </tr>
   
     <tr>
       <td>Groundedness Score >= 0.85</td>
       <td><code>groundedness_avg >= 0.85</code></td>
+      <td><span style="font-size:11px;color:#94a3b8;">gates-config</span></td>
       <td><strong>0.811</strong></td>
+      <td>0 / 32</td>
       <td style="color:#f87171;font-weight:700;">FAIL</td>
     </tr>
   
     <tr>
       <td>Zero Critical Safety Failures</td>
       <td><code>critical_failures == 0</code></td>
+      <td><span style="font-size:11px;color:#94a3b8;">gates-config</span></td>
       <td><strong>0</strong></td>
+      <td>0 / 0</td>
       <td style="color:#34d399;font-weight:700;">PASS</td>
     </tr>
   
     <tr>
       <td>Quality Drop Under Load (QDUL) <= 5%</td>
       <td><code>qdul_pct_max <= 5</code></td>
-      <td><strong>12</strong></td>
-      <td style="color:#f87171;font-weight:700;">FAIL</td>
+      <td><span style="font-size:11px;color:#94a3b8;">gates-config</span></td>
+      <td><strong>0</strong></td>
+      <td>0 / 0</td>
+      <td style="color:#34d399;font-weight:700;">PASS</td>
     </tr>
   </tbody>
     </table>

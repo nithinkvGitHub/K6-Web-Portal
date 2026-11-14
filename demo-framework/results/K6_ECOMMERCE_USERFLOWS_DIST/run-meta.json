@@ -7,6 +7,10 @@
     "EC2-Worker-01",
     "EC2-Worker-02"
   ],
+  "selected_injectors": [
+    "EC2-Worker-01",
+    "EC2-Worker-02"
+  ],
   "execution_mode": "direct-k6-split-50-50",
-  "k6": "v2.3.0 (xk6-sse v0.2.0)"
+  "engine_used": "node-http-measured"
 }

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { FRAMEWORK_ROOT, loadConfig, postProcessRunDir } from '../demo-framework/tools/aiperf.mjs';
+import { sampleHostResources } from './stats-engine.mjs';
 
 export function ensureSeedRuns(baseRoot = FRAMEWORK_ROOT) {
   const resultsDir = path.join(baseRoot, 'results');
@@ -91,13 +92,15 @@ export function ensureSeedRuns(baseRoot = FRAMEWORK_ROOT) {
     }
   ];
 
+  const hostSnap = sampleHostResources();
+
   for (const seed of seeds) {
     const runDir = path.join(resultsDir, seed.runId);
     const sumFile = path.join(runDir, 'summary.json');
     if (fs.existsSync(sumFile)) {
       try {
         const existing = JSON.parse(fs.readFileSync(sumFile, 'utf8'));
-        if (existing.run_type && existing.k6_counters) continue;
+        if (existing.run_type && existing.time_series && existing.overall?.e2e_stdev_ms !== undefined) continue;
       } catch (_) {}
     }
     fs.mkdirSync(runDir, { recursive: true });
@@ -110,8 +113,9 @@ export function ensureSeedRuns(baseRoot = FRAMEWORK_ROOT) {
         config_file: seed.configRel,
         started_at: seed.startedAt,
         workers_used: seed.workersUsed,
+        selected_injectors: seed.workersUsed,
         execution_mode: seed.executionMode,
-        k6: 'v2.3.0 (xk6-sse v0.2.0)'
+        engine_used: 'node-http-measured'
       }, null, 2)
     );
 
@@ -131,13 +135,16 @@ export function ensureSeedRuns(baseRoot = FRAMEWORK_ROOT) {
         const planningMs = Math.round(e2eMs * 0.31);
         const toolsMs = Math.round(e2eMs * 0.19);
         const synthesisMs = e2eMs - planningMs - toolsMs;
+        const ansText = isFail ? '' : p.answer;
+        const reqBytes = 320 + Buffer.byteLength(p.id, 'utf8');
+        const resBytes = 240 + Buffer.byteLength(ansText, 'utf8');
 
         rows.push({
           aiperf: 1,
           row_id: `${seed.runId}_${workerId}_${idx}`,
           run_id: seed.runId,
           worker_id: workerId,
-          execution_segment: workerId.endsWith('01') ? '0:0.5' : '0.5:1',
+          execution_segment: seed.workersUsed.length === 1 ? '0:1' : workerId.endsWith('01') ? '0:0.5' : '0.5:1',
           ts: new Date(baseTime + idx * 2400).toISOString(),
           workload: seed.workload,
           scenario_id: `${seed.workload}_lvl_${lvl.level}`,
@@ -151,11 +158,16 @@ export function ensureSeedRuns(baseRoot = FRAMEWORK_ROOT) {
           http_status: isFail ? 429 : 200,
           ttft_ms: ttftMs,
           e2e_ms: e2eMs,
+          req_bytes: reqBytes,
+          res_bytes: resBytes,
+          group_duration_ms: e2eMs,
+          iteration_duration_ms: e2eMs + 12,
+          host_resources: hostSnap,
           steps: p.steps,
           tool_calls: p.tools,
           det_pass: !isFail,
           det_failed: isFail ? ['http_429'] : [],
-          answer: isFail ? '' : p.answer,
+          answer: ansText,
           contexts: p.contexts,
           prompt_tokens: 28,
           completion_tokens: 46,

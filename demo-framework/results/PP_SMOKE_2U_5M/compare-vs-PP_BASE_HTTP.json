@@ -1,0 +1,190 @@
+{
+  "reference_run": "PP_BASE_HTTP",
+  "candidate_run": "PP_SMOKE_2U_5M",
+  "compared_at": "2026-11-14T13:24:59.286Z",
+  "passed": true,
+  "checks": [
+    {
+      "metric": "Latency p95 (http_req_duration / E2E)",
+      "reference": "822 ms",
+      "candidate": "882 ms",
+      "delta": "+7.3%",
+      "verdict": "ACCEPTABLE"
+    },
+    {
+      "metric": "Latency Mean (avg)",
+      "reference": "706 ms",
+      "candidate": "781 ms",
+      "delta": "+10.62%",
+      "verdict": "PASS"
+    },
+    {
+      "metric": "HTTP Error Rate (http_req_failed)",
+      "reference": "0.00%",
+      "candidate": "0.00%",
+      "delta": "0 pp",
+      "verdict": "PASS"
+    },
+    {
+      "metric": "Completion Rate",
+      "reference": "100.0%",
+      "candidate": "100.0%",
+      "delta": "0 pp",
+      "verdict": "PASS"
+    },
+    {
+      "metric": "Check / Deterministic Pass Rate",
+      "reference": "100.0%",
+      "candidate": "100.0%",
+      "delta": "0 pp",
+      "verdict": "PASS"
+    },
+    {
+      "metric": "Lexical Correctness Score",
+      "reference": "0.880",
+      "candidate": "0.880",
+      "delta": "0",
+      "verdict": "PASS"
+    }
+  ],
+  "scenario_deltas": [
+    {
+      "scenario": "analysis",
+      "ref_n": 4,
+      "cand_n": 3,
+      "ref_p95_ms": 785,
+      "cand_p95_ms": 845,
+      "p95_delta_pct": 7.64,
+      "ref_pass_pct": 100,
+      "cand_pass_pct": 100,
+      "pass_delta_pts": 0,
+      "verdict": "PASS"
+    },
+    {
+      "scenario": "agent",
+      "ref_n": 4,
+      "cand_n": 3,
+      "ref_p95_ms": 822,
+      "cand_p95_ms": 882,
+      "p95_delta_pct": 7.3,
+      "ref_pass_pct": 100,
+      "cand_pass_pct": 100,
+      "pass_delta_pts": 0,
+      "verdict": "PASS"
+    },
+    {
+      "scenario": "adversarial",
+      "ref_n": 3,
+      "cand_n": 3,
+      "ref_p95_ms": 767,
+      "cand_p95_ms": 827,
+      "p95_delta_pct": 7.82,
+      "ref_pass_pct": 100,
+      "cand_pass_pct": 100,
+      "pass_delta_pts": 0,
+      "verdict": "PASS"
+    },
+    {
+      "scenario": "simple",
+      "ref_n": 3,
+      "cand_n": 3,
+      "ref_p95_ms": 804,
+      "cand_p95_ms": 864,
+      "p95_delta_pct": 7.46,
+      "ref_pass_pct": 100,
+      "cand_pass_pct": 100,
+      "pass_delta_pts": 0,
+      "verdict": "PASS"
+    }
+  ],
+  "baseline_trend": [
+    {
+      "run_id": "PP_BASE_HTTP",
+      "created_at": "2026-11-12T09:15:00.000Z",
+      "run_type": "ai",
+      "rows": 14,
+      "e2e_p95_ms": 822,
+      "e2e_avg_ms": 706,
+      "completion_rate": 100,
+      "det_pass_rate": 100,
+      "gate_passed": false
+    },
+    {
+      "run_id": "PP_SMOKE_2U_5M",
+      "created_at": "2026-11-12T10:30:00.000Z",
+      "run_type": "ai",
+      "rows": 12,
+      "e2e_p95_ms": 882,
+      "e2e_avg_ms": 781,
+      "completion_rate": 100,
+      "det_pass_rate": 100,
+      "gate_passed": false
+    },
+    {
+      "run_id": "PP_PLAT_5_10_25_DIST",
+      "created_at": "2026-11-13T14:20:00.000Z",
+      "run_type": "ai",
+      "rows": 60,
+      "e2e_p95_ms": 2066,
+      "e2e_avg_ms": 1421,
+      "completion_rate": 98.3,
+      "det_pass_rate": 98.3,
+      "gate_passed": false
+    },
+    {
+      "run_id": "K6_ECOMMERCE_USERFLOWS_DIST",
+      "created_at": "2026-11-14T06:40:00.000Z",
+      "run_type": "k6",
+      "rows": 32,
+      "e2e_p95_ms": 623,
+      "e2e_avg_ms": 451,
+      "completion_rate": 100,
+      "det_pass_rate": 100,
+      "gate_passed": false
+    },
+    {
+      "run_id": "PP_VERIFY_DIST_2EC2",
+      "created_at": "2026-11-14T07:16:33.934Z",
+      "run_type": "ai",
+      "rows": 4,
+      "e2e_p95_ms": 959,
+      "e2e_avg_ms": 930,
+      "completion_rate": 100,
+      "det_pass_rate": 100,
+      "gate_passed": true
+    },
+    {
+      "run_id": "PP_DIST_125243",
+      "created_at": "2026-11-14T07:22:43.707Z",
+      "run_type": "ai",
+      "rows": 36,
+      "e2e_p95_ms": 1384,
+      "e2e_avg_ms": 1036,
+      "completion_rate": 100,
+      "det_pass_rate": 83.3,
+      "gate_passed": true
+    },
+    {
+      "run_id": "MULTIPOP_134859",
+      "created_at": "2026-11-14T08:18:59.371Z",
+      "run_type": "ai",
+      "rows": 437,
+      "e2e_p95_ms": 1929,
+      "e2e_avg_ms": 269,
+      "completion_rate": 100,
+      "det_pass_rate": 100,
+      "gate_passed": true
+    },
+    {
+      "run_id": "PP_DIST_135607",
+      "created_at": "2026-11-14T08:26:07.548Z",
+      "run_type": "ai",
+      "rows": 49,
+      "e2e_p95_ms": 1243,
+      "e2e_avg_ms": 937,
+      "completion_rate": 100,
+      "det_pass_rate": 83.7,
+      "gate_passed": true
+    }
+  ]
+}

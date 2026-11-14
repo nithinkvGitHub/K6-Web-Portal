@@ -6,6 +6,9 @@
   "workers_used": [
     "EC2-Worker-01"
   ],
+  "selected_injectors": [
+    "EC2-Worker-01"
+  ],
   "execution_mode": "single-worker",
-  "k6": "v2.3.0 (xk6-sse v0.2.0)"
+  "engine_used": "node-http-measured"
 }

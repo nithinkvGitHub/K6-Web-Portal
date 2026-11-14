@@ -2,6 +2,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import {
+  calcPercentile,
+  calcSampleStdDev,
+  calcStatsSummary,
+  sampleHostResources,
+  buildTimeBucketSeries
+} from '../../server/stats-engine.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -72,9 +79,7 @@ export function loadDatasets(cfg, overrideDatasets, baseRoot = FRAMEWORK_ROOT) {
 }
 
 function pct(sortedArr, p) {
-  if (!sortedArr.length) return 0;
-  const idx = Math.min(sortedArr.length - 1, Math.max(0, Math.ceil((p / 100) * sortedArr.length) - 1));
-  return sortedArr[idx];
+  return calcPercentile(sortedArr, p);
 }
 
 function parseDurationMs(str, fallbackSec = 10) {
@@ -253,6 +258,79 @@ export function scoreLexicalRow(row, expected = {}) {
   };
 }
 
+/**
+ * Parse a k6 threshold expression like "p(95)<2000", "rate>0.95", "avg<=500"
+ */
+export function parseK6ThresholdExpr(metricName, exprStr) {
+  const clean = String(exprStr || '').trim();
+  const m = clean.match(/^(p\(\d+(?:\.\d+)?\)|avg|med|min|max|rate|count|value)\s*(<=|>=|<|>|==)\s*(-?\d+(?:\.\d+)?)$/);
+  if (!m) return null;
+  const [, agg, op, rawVal] = m;
+  const value = Number(rawVal);
+
+  let mappedMetric = metricName;
+  if (metricName === 'http_req_duration' || metricName === 'agent_e2e_duration') {
+    if (agg === 'p(95)') mappedMetric = 'e2e_p95_ms';
+    else if (agg === 'p(99)') mappedMetric = 'e2e_p99_ms';
+    else if (agg === 'p(50)' || agg === 'med') mappedMetric = 'e2e_p50_ms';
+    else if (agg === 'avg') mappedMetric = 'e2e_avg_ms';
+  } else if (metricName === 'agent_ttft_ms' || metricName === 'http_req_waiting') {
+    if (agg === 'p(95)') mappedMetric = 'ttft_p95_ms';
+    else if (agg === 'p(50)' || agg === 'med') mappedMetric = 'ttft_p50_ms';
+  } else if (metricName === 'http_req_failed') {
+    mappedMetric = 'http_error_rate';
+  } else if (metricName === 'checks' || metricName.startsWith('checks{')) {
+    mappedMetric = 'deterministic_pass_rate';
+  } else if (metricName === 'agent_completion_rate') {
+    mappedMetric = 'completion_rate';
+  }
+
+  return {
+    rawMetric: metricName,
+    agg,
+    metric: mappedMetric,
+    op,
+    value,
+    expression: `${metricName}: ${clean}`
+  };
+}
+
+function evalComparison(actual, op, target) {
+  if (actual === null || actual === undefined || Number.isNaN(Number(actual))) return null;
+  const a = Number(actual);
+  const t = Number(target);
+  if (op === '<=') return a <= t;
+  if (op === '<') return a < t;
+  if (op === '>=') return a >= t;
+  if (op === '>') return a > t;
+  if (op === '==') return a === t;
+  return false;
+}
+
+function countRowPassFailForGate(rows, gate) {
+  let passes = 0;
+  let fails = 0;
+  for (const r of rows) {
+    let rowVal = null;
+    if (gate.metric.startsWith('e2e_')) rowVal = Number(r.e2e_ms || 0);
+    else if (gate.metric.startsWith('ttft_')) rowVal = r.ttft_ms != null ? Number(r.ttft_ms) : null;
+    else if (gate.metric === 'completion_rate') rowVal = r.completion_status === 'completed' ? 1 : 0;
+    else if (gate.metric === 'deterministic_pass_rate') rowVal = r.det_pass ? 1 : 0;
+    else if (gate.metric === 'http_error_rate') rowVal = r.http_status >= 400 || r.http_status === 0 ? 1 : 0;
+    else if (gate.metric === 'correctness_avg') rowVal = Number(r.correctness ?? 0);
+    else if (gate.metric === 'groundedness_avg') rowVal = Number(r.groundedness ?? 0);
+    else if (r.custom_metrics && r.custom_metrics[gate.rawMetric || gate.metric] != null) {
+      rowVal = Number(r.custom_metrics[gate.rawMetric || gate.metric]);
+    }
+
+    if (rowVal === null) continue;
+    const ok = evalComparison(rowVal, gate.op, gate.value);
+    if (ok) passes++;
+    else fails++;
+  }
+  return { passes, fails };
+}
+
 export function postProcessRunDir(runDir, cfg, gatesCfg, baselineDir = null, baseRoot = FRAMEWORK_ROOT) {
   const rowsFile = path.join(runDir, 'rows.jsonl');
   if (!fs.existsSync(rowsFile)) {
@@ -325,7 +403,7 @@ export function postProcessRunDir(runDir, cfg, gatesCfg, baselineDir = null, bas
     const e2es = subset.map((r) => Number(r.e2e_ms || 0)).sort((a, b) => a - b);
     const ttfts = subset.map((r) => Number(r.ttft_ms || 0)).filter((v) => v > 0).sort((a, b) => a - b);
     const completed = subset.filter((r) => r.completion_status === 'completed').length;
-    const httpErrors = subset.filter((r) => r.http_status >= 400).length;
+    const httpErrors = subset.filter((r) => r.http_status >= 400 || r.http_status === 0).length;
     const timeouts = subset.filter((r) => r.completion_status === 'timeout').length;
     const detPassed = subset.filter((r) => r.det_pass).length;
     const critFailures = subset.filter((r) => {
@@ -347,7 +425,7 @@ export function postProcessRunDir(runDir, cfg, gatesCfg, baselineDir = null, bas
       corrSum += sc.correctness;
       grndSum += sc.groundedness;
       stepsSum += Number(r.steps || 1);
-      costSum += Number(r.est_cost || 0.0008);
+      costSum += Number(r.est_cost || 0);
       if (r.server_timing && r.server_timing.planning_ms != null) {
         planningSum += Number(r.server_timing.planning_ms || 0);
         toolsSum += Number(r.server_timing.tools_ms || 0);
@@ -364,25 +442,36 @@ export function postProcessRunDir(runDir, cfg, gatesCfg, baselineDir = null, bas
     const baseQ = refQuality ?? corrAvg;
     const qdulPct = baseQ > 0 ? Number(Math.max(0, ((baseQ - corrAvg) / baseQ) * 100).toFixed(2)) : 0;
 
-    // Worker distribution breakdown
     const workerCounts = {};
     for (const r of subset) {
       const w = r.worker_id || 'worker-1';
       workerCounts[w] = (workerCounts[w] || 0) + 1;
     }
 
+    // Measure actual RPS from subset timestamp span
+    const tsMs = subset.map((r) => new Date(r.ts).getTime()).filter((t) => Number.isFinite(t));
+    const spanSec = tsMs.length > 1 ? Math.max(1, (Math.max(...tsMs) - Math.min(...tsMs)) / 1000) : Math.max(1, n * 0.25);
+    const measuredRps = Number((n / spanSec).toFixed(2));
+
     return {
       level: levelNum,
       n,
+      rps: measuredRps,
       low_sample: n < (cfg.reporting?.minSamples || 10),
-      in_flight_avg: Number((levelNum * 0.88).toFixed(1)),
+      in_flight_avg: levelNum,
       in_flight_peak: levelNum,
+      e2e_min_ms: e2es.length ? Math.round(e2es[0]) : 0,
       e2e_p50_ms: Math.round(pct(e2es, 50)),
+      e2e_p90_ms: Math.round(pct(e2es, 90)),
       e2e_p95_ms: Math.round(pct(e2es, 95)),
       e2e_p99_ms: Math.round(pct(e2es, 99)),
+      e2e_max_ms: e2es.length ? Math.round(e2es[e2es.length - 1]) : 0,
       e2e_avg_ms: n ? Math.round(e2es.reduce((a, b) => a + b, 0) / n) : 0,
+      e2e_stdev_ms: Number(calcSampleStdDev(e2es).toFixed(2)),
       ttft_p50_ms: ttfts.length ? Math.round(pct(ttfts, 50)) : null,
       ttft_p95_ms: ttfts.length ? Math.round(pct(ttfts, 95)) : null,
+      ttft_avg_ms: ttfts.length ? Math.round(ttfts.reduce((a, b) => a + b, 0) / ttfts.length) : null,
+      ttft_stdev_ms: ttfts.length ? Number(calcSampleStdDev(ttfts).toFixed(2)) : null,
       completion_rate: compRate,
       http_error_rate: n ? Number((httpErrors / n).toFixed(4)) : 0,
       timeout_rate: n ? Number((timeouts / n).toFixed(4)) : 0,
@@ -413,10 +502,10 @@ export function postProcessRunDir(runDir, cfg, gatesCfg, baselineDir = null, bas
   const overall = computeMetrics(rows, sortedLevels[sortedLevels.length - 1] || 1, referenceQuality);
   overall.qdul_pct_max = levels.reduce((max, l) => Math.max(max, l.qdul_pct_max || 0), 0);
 
-  // Categories breakdown
+  // Categories / Scenarios breakdown
   const byCategory = {};
   for (const r of rows) {
-    const cat = r.category || 'simple';
+    const cat = r.category || r.scenario_id || 'simple';
     if (!byCategory[cat]) byCategory[cat] = [];
     byCategory[cat].push(r);
   }
@@ -425,35 +514,26 @@ export function postProcessRunDir(runDir, cfg, gatesCfg, baselineDir = null, bas
     categories[cat] = computeMetrics(cRows, 1, referenceQuality);
   }
 
-  // Timeline buckets (10 buckets across the run)
-  const timestamps = rows.map((r) => new Date(r.ts).getTime()).filter((t) => !isNaN(t));
-  const minTs = timestamps.length ? Math.min(...timestamps) : Date.now() - 10000;
-  const maxTs = timestamps.length ? Math.max(...timestamps) : Date.now();
-  const span = Math.max(1000, maxTs - minTs);
-  const bucketCount = Math.min(12, Math.max(4, rows.length));
-  const bucketSize = span / bucketCount;
-  const timeline = [];
-  for (let b = 0; b < bucketCount; b++) {
-    const bStart = minTs + b * bucketSize;
-    const bEnd = bStart + bucketSize;
-    const bRows = rows.filter((r) => {
-      const t = new Date(r.ts).getTime();
-      return b === bucketCount - 1 ? t >= bStart && t <= bEnd : t >= bStart && t < bEnd;
-    });
-    if (bRows.length > 0) {
-      const m = computeMetrics(bRows, bRows[0].load_level || 1, referenceQuality);
-      timeline.push({
-        bucket: b + 1,
-        ts: new Date(bStart).toISOString(),
-        label: `+${Math.round(((bStart - minTs) / 1000))}s`,
-        requests: bRows.length,
-        e2e_p95_ms: m.e2e_p95_ms,
-        ttft_p95_ms: m.ttft_p95_ms,
-        completion_rate: m.completion_rate,
-        correctness_avg: m.correctness_avg
-      });
-    }
-  }
+  // Real Time-Bucket Series across full run duration (no 60-row cutoff)
+  const timeSeries = buildTimeBucketSeries(rows, 36);
+  const timeline = timeSeries.map((b) => ({
+    bucket: b.bucket,
+    ts: b.ts,
+    elapsed_sec: b.elapsedSec,
+    label: b.label,
+    requests: b.requests,
+    rps: b.rps,
+    active_vus: b.activeVus,
+    e2e_p95_ms: b.e2eP95,
+    e2e_avg_ms: b.e2eAvg,
+    ttft_p95_ms: b.ttftP95,
+    completion_rate: Number((b.completionRate / 100).toFixed(4)),
+    det_pass_rate: Number((b.detPassRate / 100).toFixed(4)),
+    cpu_avg_pct: b.cpuAvg,
+    mem_avg_pct: b.memAvg,
+    by_worker: b.byWorker,
+    by_scenario: b.byScenario
+  }));
 
   // Capacity SLO evaluation
   const slo = cfg.reporting?.slo || { e2e_p95_ms: 10000, completion_rate: 0.98, qdul_pct_max: 10 };
@@ -474,25 +554,118 @@ export function postProcessRunDir(runDir, cfg, gatesCfg, baselineDir = null, bas
     }
   }
 
-  // Evaluate Gates against highest level (or overall)
+  const metaPath = path.join(runDir, 'run-meta.json');
+  const runMeta = fs.existsSync(metaPath) ? JSON.parse(fs.readFileSync(metaPath, 'utf8')) : {};
+
+  // Discover custom metrics from rows and runMeta
+  const customMetricsMap = new Map();
+  if (runMeta.custom_metrics && typeof runMeta.custom_metrics === 'object') {
+    for (const [mName, mDef] of Object.entries(runMeta.custom_metrics)) {
+      if (Array.isArray(mDef.values) && mDef.values.length > 0) {
+        customMetricsMap.set(mName, {
+          name: mName,
+          type: mDef.type || 'trend',
+          contains: mDef.contains || 'default',
+          values: [...mDef.values]
+        });
+      }
+    }
+  }
+  for (const r of rows) {
+    if (r.custom_metrics && typeof r.custom_metrics === 'object') {
+      for (const [mName, val] of Object.entries(r.custom_metrics)) {
+        const num = Number(val);
+        if (!Number.isFinite(num)) continue;
+        if (!customMetricsMap.has(mName)) {
+          customMetricsMap.set(mName, { name: mName, type: 'trend', contains: 'default', values: [] });
+        }
+        customMetricsMap.get(mName).values.push(num);
+      }
+    }
+  }
+
+  const customMetricsSummary = {};
+  for (const [mName, mObj] of customMetricsMap.entries()) {
+    customMetricsSummary[mName] = {
+      name: mName,
+      type: mObj.type,
+      contains: mObj.contains,
+      stats: calcStatsSummary(mObj.values)
+    };
+  }
+
+  // Merge script options.thresholds (primary for k6 scripts) + gates.json
   const targetLevelMetrics = levels[levels.length - 1] || overall;
   const gateResults = [];
   let allGatesPassed = true;
+
+  // 1) First evaluate script options.thresholds if present in runMeta.script_thresholds
+  const scriptThresholds = runMeta.script_thresholds || {};
+  for (const [metricKey, exprArr] of Object.entries(scriptThresholds)) {
+    const expressions = Array.isArray(exprArr) ? exprArr : [exprArr];
+    for (const expr of expressions) {
+      const parsed = parseK6ThresholdExpr(metricKey, expr);
+      if (!parsed) continue;
+      let actual = targetLevelMetrics[parsed.metric] !== undefined ? targetLevelMetrics[parsed.metric] : overall[parsed.metric];
+      if (actual === undefined && customMetricsSummary[metricKey]) {
+        const st = customMetricsSummary[metricKey].stats;
+        if (parsed.agg === 'p(95)') actual = st.p95;
+        else if (parsed.agg === 'p(90)') actual = st.p90;
+        else if (parsed.agg === 'avg') actual = st.avg;
+        else if (parsed.agg === 'med' || parsed.agg === 'p(50)') actual = st.med;
+        else if (parsed.agg === 'max') actual = st.max;
+      }
+      if (actual === null || actual === undefined) {
+        gateResults.push({
+          label: `k6 Threshold: ${parsed.expression}`,
+          metric: parsed.metric,
+          rawMetric: metricKey,
+          op: parsed.op,
+          value: parsed.value,
+          actual: null,
+          passes: 0,
+          fails: 0,
+          source: 'k6-script',
+          status: 'SKIPPED'
+        });
+        continue;
+      }
+      const pass = Boolean(evalComparison(actual, parsed.op, parsed.value));
+      if (!pass) allGatesPassed = false;
+      const { passes, fails } = countRowPassFailForGate(rows, parsed);
+      gateResults.push({
+        label: `k6 Threshold: ${parsed.expression}`,
+        metric: parsed.metric,
+        rawMetric: metricKey,
+        op: parsed.op,
+        value: parsed.value,
+        actual,
+        passes,
+        fails,
+        source: 'k6-script',
+        status: pass ? 'PASS' : 'FAIL'
+      });
+    }
+  }
+
+  // 2) Evaluate gatesCfg.gates
   for (const g of gatesCfg?.gates || []) {
     const actual = targetLevelMetrics[g.metric] !== undefined ? targetLevelMetrics[g.metric] : overall[g.metric];
     if (actual === null || actual === undefined) {
-      gateResults.push({ ...g, actual: null, status: 'SKIPPED' });
+      gateResults.push({ ...g, actual: null, passes: 0, fails: 0, source: g.source || 'gates-config', status: 'SKIPPED' });
       continue;
     }
-    let pass = false;
-    if (g.op === '<=') pass = actual <= g.value;
-    else if (g.op === '<') pass = actual < g.value;
-    else if (g.op === '>=') pass = actual >= g.value;
-    else if (g.op === '>') pass = actual > g.value;
-    else if (g.op === '==') pass = actual === g.value;
-
+    const pass = Boolean(evalComparison(actual, g.op, g.value));
     if (!pass) allGatesPassed = false;
-    gateResults.push({ ...g, actual, status: pass ? 'PASS' : 'FAIL' });
+    const { passes, fails } = countRowPassFailForGate(rows, g);
+    gateResults.push({
+      ...g,
+      actual,
+      passes,
+      fails,
+      source: g.source || 'gates-config',
+      status: pass ? 'PASS' : 'FAIL'
+    });
   }
 
   const warnings = [];
@@ -508,30 +681,59 @@ export function postProcessRunDir(runDir, cfg, gatesCfg, baselineDir = null, bas
   const slowest = [...rows].sort((a, b) => (b.e2e_ms || 0) - (a.e2e_ms || 0)).slice(0, 10);
   const failures = rows.filter((r) => r.completion_status !== 'completed' || !r.det_pass).slice(0, 25);
 
-  const metaPath = path.join(runDir, 'run-meta.json');
-  const runMeta = fs.existsSync(metaPath) ? JSON.parse(fs.readFileSync(metaPath, 'utf8')) : {};
-
   const workloadName = rows[0]?.workload || runMeta.workload || 'smoke';
   const isNormalK6 =
+    runMeta.counter_profile === 'k6' ||
     runMeta.run_type === 'k6' ||
     rows[0]?.mode === 'direct-k6' ||
     String(workloadName).startsWith('k6:') ||
     (rows[0]?.mode === 'multi-population' && !rows.some((r) => r.protocol === 'SSE'));
 
-  const totalBytesRcv = rows.reduce((s, r) => s + Math.max(680, String(r.answer || '').length * 18), 0);
-  const totalBytesSent = rows.length * 420;
+  // Measure real bytes & durations from rows without fabricated multipliers
+  const measuredResBytes = rows.map((r) => r.res_bytes).filter((v) => v != null && Number.isFinite(Number(v)));
+  const measuredReqBytes = rows.map((r) => r.req_bytes).filter((v) => v != null && Number.isFinite(Number(v)));
+  const measuredGroupDurs = rows.map((r) => r.group_duration_ms).filter((v) => v != null && Number.isFinite(Number(v))).map(Number).sort((a, b) => a - b);
+  const measuredIterDurs = rows.map((r) => r.iteration_duration_ms).filter((v) => v != null && Number.isFinite(Number(v))).map(Number).sort((a, b) => a - b);
+
+  const cpuSamples = rows.map((r) => r.host_resources?.cpuPct).filter((v) => v != null && Number.isFinite(Number(v))).map(Number);
+  const memSamples = rows.map((r) => r.host_resources?.memPct).filter((v) => v != null && Number.isFinite(Number(v))).map(Number);
+  const handleSamples = rows.map((r) => r.host_resources?.fileHandles).filter((v) => v != null && Number.isFinite(Number(v))).map(Number);
+
+  const totalBytesRcv = measuredResBytes.length > 0
+    ? measuredResBytes.reduce((a, b) => a + Number(b), 0)
+    : null;
+  const totalBytesSent = measuredReqBytes.length > 0
+    ? measuredReqBytes.reduce((a, b) => a + Number(b), 0)
+    : null;
+
+  const groupDurP95 = measuredGroupDurs.length > 0 ? Math.round(pct(measuredGroupDurs, 95)) : null;
+  const iterDurP95 = measuredIterDurs.length > 0 ? Math.round(pct(measuredIterDurs, 95)) : null;
+
+  const cpuAvgPct = cpuSamples.length > 0
+    ? Number((cpuSamples.reduce((a, b) => a + b, 0) / cpuSamples.length).toFixed(1))
+    : (runMeta.host_telemetry?.cpuAvgPct ?? null);
+  const memAvgPct = memSamples.length > 0
+    ? Number((memSamples.reduce((a, b) => a + b, 0) / memSamples.length).toFixed(1))
+    : (runMeta.host_telemetry?.memAvgPct ?? null);
+  const fileHandlesAvg = handleSamples.length > 0
+    ? Math.round(handleSamples.reduce((a, b) => a + b, 0) / handleSamples.length)
+    : (runMeta.host_telemetry?.fileHandles ?? null);
 
   const summary = {
     run_id: rows[0]?.run_id || path.basename(runDir),
     run_type: isNormalK6 ? 'k6' : 'ai',
+    counter_profile: runMeta.counter_profile || (isNormalK6 ? 'k6' : 'ai'),
+    status: runMeta.status || 'COMPLETED',
     created_at: runMeta.started_at || rows[0]?.ts || new Date().toISOString(),
     workload: workloadName,
     config_file: runMeta.config_file || 'config/default.json',
     target_name: cfg.target?.name || cfg.target?.model || 'Target System',
     model: cfg.target?.model || 'mock-agent-1',
     stream: Boolean(cfg.target?.stream),
-    stream_engine: cfg.target?.streamEngine || 'k6-http',
-    workers_used: runMeta.workers_used || ['EC2-Worker-01', 'EC2-Worker-02'],
+    stream_engine: runMeta.engine_used || cfg.target?.streamEngine || 'node-http-measured',
+    workers_used: runMeta.workers_used || Array.from(new Set(rows.map((r) => r.worker_id).filter(Boolean))),
+    selected_injectors: runMeta.selected_injectors || null,
+    population_matrix: runMeta.population_matrix || null,
     execution_mode: runMeta.execution_mode || 'distributed-segment',
     rows: rows.length,
     steady_rows: rows.length,
@@ -539,16 +741,17 @@ export function postProcessRunDir(runDir, cfg, gatesCfg, baselineDir = null, bas
     k6_counters: {
       http_reqs: rows.length,
       iterations: rows.length,
-      checks_passed: rows.filter((r) => r.det_pass !== false && r.http_status === 200).length,
+      checks_passed: rows.filter((r) => r.det_pass !== false && r.http_status >= 200 && r.http_status < 400).length,
       checks_total: rows.length,
       data_received_bytes: totalBytesRcv,
       data_sent_bytes: totalBytesSent,
-      group_duration_p95_ms: Math.round((overall.e2e_p95_ms || 0) + 14),
-      iteration_duration_p95_ms: Math.round((overall.e2e_p95_ms || 0) + 240),
-      load_generator_cpu_avg_pct: 4.8,
-      load_generator_mem_avg_pct: 31.2,
-      load_generator_file_handles: 1296
+      group_duration_p95_ms: groupDurP95,
+      iteration_duration_p95_ms: iterDurP95,
+      load_generator_cpu_avg_pct: cpuAvgPct,
+      load_generator_mem_avg_pct: memAvgPct,
+      load_generator_file_handles: fileHandlesAvg
     },
+    custom_metrics: customMetricsSummary,
     levels,
     categories,
     overall,
@@ -559,6 +762,7 @@ export function postProcessRunDir(runDir, cfg, gatesCfg, baselineDir = null, bas
       slo
     },
     timeline,
+    time_series: timeSeries,
     warnings,
     gate: {
       name: gatesCfg?.name || 'Release Gates',
@@ -574,12 +778,25 @@ export function postProcessRunDir(runDir, cfg, gatesCfg, baselineDir = null, bas
     path.join(runDir, 'k6-summary.json'),
     JSON.stringify({
       metrics: {
+        http_req_duration: {
+          values: {
+            min: overall.e2e_min_ms,
+            avg: overall.e2e_avg_ms,
+            med: overall.e2e_p50_ms,
+            max: overall.e2e_max_ms,
+            'p(90)': overall.e2e_p90_ms,
+            'p(95)': overall.e2e_p95_ms,
+            'p(99)': overall.e2e_p99_ms,
+            stdev: overall.e2e_stdev_ms
+          }
+        },
         agent_e2e_duration: {
           values: {
             avg: overall.e2e_avg_ms,
             med: overall.e2e_p50_ms,
             'p(95)': overall.e2e_p95_ms,
-            'p(99)': overall.e2e_p99_ms
+            'p(99)': overall.e2e_p99_ms,
+            stdev: overall.e2e_stdev_ms
           }
         },
         agent_completion_rate: { values: { rate: overall.completion_rate } },
@@ -590,7 +807,7 @@ export function postProcessRunDir(runDir, cfg, gatesCfg, baselineDir = null, bas
   );
 
   // 3. Write results.csv
-  const csvHeader = 'row_id,run_id,worker_id,load_level,prompt_id,category,completion_status,http_status,ttft_ms,e2e_ms,steps,det_pass,correctness_score,groundedness_score,trace_id\n';
+  const csvHeader = 'row_id,run_id,worker_id,load_level,prompt_id,category,completion_status,http_status,ttft_ms,e2e_ms,req_bytes,res_bytes,iteration_duration_ms,steps,det_pass,correctness_score,groundedness_score,trace_id\n';
   const csvRows = rows.map((r) => {
     const sc = evalByRowId.get(r.row_id) || { correctness: 0, groundedness: 0 };
     return [
@@ -604,6 +821,9 @@ export function postProcessRunDir(runDir, cfg, gatesCfg, baselineDir = null, bas
       r.http_status,
       r.ttft_ms ?? '',
       r.e2e_ms,
+      r.req_bytes ?? '',
+      r.res_bytes ?? '',
+      r.iteration_duration_ms ?? '',
       r.steps,
       r.det_pass,
       sc.correctness,
@@ -632,6 +852,7 @@ function buildSelfContainedHtmlReport(summary) {
       <td>${l.n}</td>
       <td>${l.e2e_p50_ms} ms</td>
       <td><strong>${l.e2e_p95_ms} ms</strong></td>
+      <td>${l.e2e_stdev_ms ?? 0} ms</td>
       <td>${l.ttft_p95_ms != null ? l.ttft_p95_ms + ' ms' : 'n/a'}</td>
       <td>${(l.completion_rate * 100).toFixed(1)}%</td>
       <td>${(l.deterministic_pass_rate * 100).toFixed(1)}%</td>
@@ -646,7 +867,9 @@ function buildSelfContainedHtmlReport(summary) {
     <tr>
       <td>${g.label || g.metric}</td>
       <td><code>${g.metric} ${g.op} ${g.value}</code></td>
+      <td><span style="font-size:11px;color:#94a3b8;">${g.source || 'gates-config'}</span></td>
       <td><strong>${g.actual ?? 'n/a'}</strong></td>
+      <td>${g.passes ?? '-'} / ${g.fails ?? '-'}</td>
       <td style="color:${g.status === 'PASS' ? '#34d399' : g.status === 'FAIL' ? '#f87171' : '#94a3b8'};font-weight:700;">${g.status}</td>
     </tr>
   `).join('');
@@ -673,8 +896,8 @@ function buildSelfContainedHtmlReport(summary) {
 <body>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
     <div>
-      <h1 style="margin-bottom:4px;">AI Agent Performance Report: ${summary.run_id}</h1>
-      <div style="color:#94a3b8;font-size:13px;">Workload: <strong>${summary.workload}</strong> | Target: <strong>${summary.target_name}</strong> | Model: <code>${summary.model}</code> | Workers: <strong>${(summary.workers_used || []).join(', ')}</strong></div>
+      <h1 style="margin-bottom:4px;">Performance Report: ${summary.run_id}</h1>
+      <div style="color:#94a3b8;font-size:13px;">Workload: <strong>${summary.workload}</strong> | Engine: <code>${summary.stream_engine}</code> | Target: <strong>${summary.target_name}</strong> | Injectors: <strong>${(summary.workers_used || []).join(', ')}</strong></div>
     </div>
     <div>${gateBadge}</div>
   </div>
@@ -682,18 +905,18 @@ function buildSelfContainedHtmlReport(summary) {
   ${summary.warnings.length ? `<div class="warn"><strong>Warnings:</strong><ul style="margin:6px 0 0 18px;padding:0;">${summary.warnings.map((w) => `<li>${w}</li>`).join('')}</ul></div>` : ''}
 
   <div class="grid">
-    <div class="stat"><div class="stat-label">Total Turns Executed</div><div class="stat-val">${summary.rows}</div></div>
-    <div class="stat"><div class="stat-label">Overall E2E p95</div><div class="stat-val">${summary.overall.e2e_p95_ms} ms</div></div>
-    <div class="stat"><div class="stat-label">Completion / Det. Pass</div><div class="stat-val">${(summary.overall.completion_rate * 100).toFixed(1)}% / ${(summary.overall.deterministic_pass_rate * 100).toFixed(1)}%</div></div>
+    <div class="stat"><div class="stat-label">Total Turns / Requests</div><div class="stat-val">${summary.rows}</div></div>
+    <div class="stat"><div class="stat-label">Overall Latency p95 (Stdev)</div><div class="stat-val">${summary.overall.e2e_p95_ms} ms (${summary.overall.e2e_stdev_ms ?? 0} ms)</div></div>
+    <div class="stat"><div class="stat-label">Completion / Check Pass</div><div class="stat-val">${(summary.overall.completion_rate * 100).toFixed(1)}% / ${(summary.overall.deterministic_pass_rate * 100).toFixed(1)}%</div></div>
     <div class="stat"><div class="stat-label">Correctness / Max QDUL</div><div class="stat-val">${summary.overall.correctness_avg.toFixed(2)} / ${summary.overall.qdul_pct_max}%</div></div>
   </div>
 
   <div class="card">
-    <h3>Load Level Breakdown (Node -> Distributed k6 -> Node)</h3>
+    <h3>Load Level Breakdown</h3>
     <table>
       <thead>
         <tr>
-          <th>Level</th><th>In-Flight avg/peak</th><th>Rows (n)</th><th>E2E p50</th><th>E2E p95</th><th>TTFT p95</th><th>Complete</th><th>Det. Pass</th><th>Correctness</th><th>Grounded</th><th>Steps</th><th>QDUL%</th>
+          <th>Level</th><th>In-Flight avg/peak</th><th>Rows (n)</th><th>p50</th><th>p95</th><th>Stdev (n-1)</th><th>TTFT p95</th><th>Complete</th><th>Checks</th><th>Correctness</th><th>Grounded</th><th>Steps</th><th>QDUL%</th>
         </tr>
       </thead>
       <tbody>${levelRows}</tbody>
@@ -701,9 +924,9 @@ function buildSelfContainedHtmlReport(summary) {
   </div>
 
   <div class="card">
-    <h3>Release Gates (${summary.gate.name})</h3>
+    <h3>Thresholds & Release Gates (${summary.gate.name})</h3>
     <table>
-      <thead><tr><th>Gate Rule</th><th>Expression</th><th>Actual Value</th><th>Status</th></tr></thead>
+      <thead><tr><th>Gate / Threshold</th><th>Expression</th><th>Source</th><th>Actual Value</th><th>Row Pass / Fail</th><th>Status</th></tr></thead>
       <tbody>${gateRows}</tbody>
     </table>
   </div>
@@ -711,24 +934,42 @@ function buildSelfContainedHtmlReport(summary) {
 </html>`;
 }
 
-export function compareRuns(refDir, candDir) {
+export function compareRuns(refDir, candDir, allRunsRoot = null) {
   const refSum = JSON.parse(fs.readFileSync(path.join(refDir, 'summary.json'), 'utf8'));
   const candSum = JSON.parse(fs.readFileSync(path.join(candDir, 'summary.json'), 'utf8'));
 
   const e2eDeltaPct = refSum.overall.e2e_p95_ms > 0
     ? Number((((candSum.overall.e2e_p95_ms - refSum.overall.e2e_p95_ms) / refSum.overall.e2e_p95_ms) * 100).toFixed(2))
     : 0;
+  const avgDeltaPct = refSum.overall.e2e_avg_ms > 0
+    ? Number((((candSum.overall.e2e_avg_ms - refSum.overall.e2e_avg_ms) / refSum.overall.e2e_avg_ms) * 100).toFixed(2))
+    : 0;
   const compDeltaPts = Number(((candSum.overall.completion_rate - refSum.overall.completion_rate) * 100).toFixed(2));
   const corrDelta = Number((candSum.overall.correctness_avg - refSum.overall.correctness_avg).toFixed(3));
   const detDeltaPts = Number(((candSum.overall.deterministic_pass_rate - refSum.overall.deterministic_pass_rate) * 100).toFixed(2));
+  const errDeltaPts = Number((((candSum.overall.http_error_rate || 0) - (refSum.overall.http_error_rate || 0)) * 100).toFixed(2));
 
   const checks = [
     {
-      metric: 'E2E Latency p95',
+      metric: 'Latency p95 (http_req_duration / E2E)',
       reference: `${refSum.overall.e2e_p95_ms} ms`,
       candidate: `${candSum.overall.e2e_p95_ms} ms`,
       delta: `${e2eDeltaPct > 0 ? '+' : ''}${e2eDeltaPct}%`,
       verdict: e2eDeltaPct > 15 ? 'REGRESSION' : Math.abs(e2eDeltaPct) < 5 ? 'NOISE' : e2eDeltaPct < 0 ? 'IMPROVED' : 'ACCEPTABLE'
+    },
+    {
+      metric: 'Latency Mean (avg)',
+      reference: `${refSum.overall.e2e_avg_ms} ms`,
+      candidate: `${candSum.overall.e2e_avg_ms} ms`,
+      delta: `${avgDeltaPct > 0 ? '+' : ''}${avgDeltaPct}%`,
+      verdict: avgDeltaPct > 15 ? 'REGRESSION' : avgDeltaPct < -5 ? 'IMPROVED' : 'PASS'
+    },
+    {
+      metric: 'HTTP Error Rate (http_req_failed)',
+      reference: `${((refSum.overall.http_error_rate || 0) * 100).toFixed(2)}%`,
+      candidate: `${((candSum.overall.http_error_rate || 0) * 100).toFixed(2)}%`,
+      delta: `${errDeltaPts > 0 ? '+' : ''}${errDeltaPts} pp`,
+      verdict: errDeltaPts > 2 ? 'REGRESSION' : 'PASS'
     },
     {
       metric: 'Completion Rate',
@@ -738,28 +979,92 @@ export function compareRuns(refDir, candDir) {
       verdict: compDeltaPts < -2 ? 'REGRESSION' : 'PASS'
     },
     {
-      metric: 'Deterministic Pass Rate',
+      metric: 'Check / Deterministic Pass Rate',
       reference: `${(refSum.overall.deterministic_pass_rate * 100).toFixed(1)}%`,
       candidate: `${(candSum.overall.deterministic_pass_rate * 100).toFixed(1)}%`,
       delta: `${detDeltaPts > 0 ? '+' : ''}${detDeltaPts} pp`,
       verdict: detDeltaPts < -3 ? 'REGRESSION' : 'PASS'
-    },
-    {
+    }
+  ];
+
+  // Include AI lexical correctness check when comparing AI runs
+  if (refSum.run_type !== 'k6' || candSum.run_type !== 'k6') {
+    checks.push({
       metric: 'Lexical Correctness Score',
       reference: refSum.overall.correctness_avg.toFixed(3),
       candidate: candSum.overall.correctness_avg.toFixed(3),
       delta: `${corrDelta > 0 ? '+' : ''}${corrDelta}`,
       verdict: corrDelta < -0.05 ? 'REGRESSION' : 'PASS'
-    }
-  ];
+    });
+  }
 
-  const hasRegression = checks.some((c) => c.verdict === 'REGRESSION');
+  // Per-scenario / per-category delta comparison (supports both k6 scenarios & AI prompt categories)
+  const scenarioDeltas = [];
+  const allCats = new Set([
+    ...Object.keys(refSum.categories || {}),
+    ...Object.keys(candSum.categories || {})
+  ]);
+  for (const cat of allCats) {
+    const rCat = refSum.categories?.[cat];
+    const cCat = candSum.categories?.[cat];
+    if (!rCat || !cCat) continue;
+    const catP95Delta = rCat.e2e_p95_ms > 0
+      ? Number((((cCat.e2e_p95_ms - rCat.e2e_p95_ms) / rCat.e2e_p95_ms) * 100).toFixed(2))
+      : 0;
+    const catCheckDelta = Number(((cCat.deterministic_pass_rate - rCat.deterministic_pass_rate) * 100).toFixed(2));
+    scenarioDeltas.push({
+      scenario: cat,
+      ref_n: rCat.n,
+      cand_n: cCat.n,
+      ref_p95_ms: rCat.e2e_p95_ms,
+      cand_p95_ms: cCat.e2e_p95_ms,
+      p95_delta_pct: catP95Delta,
+      ref_pass_pct: Number((rCat.deterministic_pass_rate * 100).toFixed(1)),
+      cand_pass_pct: Number((cCat.deterministic_pass_rate * 100).toFixed(1)),
+      pass_delta_pts: catCheckDelta,
+      verdict: catP95Delta > 20 || catCheckDelta < -5 ? 'REGRESSION' : catP95Delta < -5 ? 'IMPROVED' : 'PASS'
+    });
+  }
+
+  // Multi-run historical trend across results directory
+  const resultsRoot = allRunsRoot || path.dirname(refDir);
+  const baselineTrend = [];
+  if (fs.existsSync(resultsRoot)) {
+    try {
+      const dirs = fs.readdirSync(resultsRoot, { withFileTypes: true }).filter((d) => d.isDirectory());
+      for (const d of dirs) {
+        const sFile = path.join(resultsRoot, d.name, 'summary.json');
+        if (fs.existsSync(sFile)) {
+          const s = JSON.parse(fs.readFileSync(sFile, 'utf8'));
+          baselineTrend.push({
+            run_id: s.run_id,
+            created_at: s.created_at,
+            run_type: s.run_type || 'ai',
+            rows: s.rows,
+            e2e_p95_ms: s.overall?.e2e_p95_ms || 0,
+            e2e_avg_ms: s.overall?.e2e_avg_ms || 0,
+            completion_rate: Number(((s.overall?.completion_rate || 0) * 100).toFixed(1)),
+            det_pass_rate: Number(((s.overall?.deterministic_pass_rate || 0) * 100).toFixed(1)),
+            gate_passed: Boolean(s.gate?.passed)
+          });
+        }
+      }
+      baselineTrend.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    } catch (_) {}
+  }
+
+  const hasRegression =
+    checks.some((c) => c.verdict === 'REGRESSION') ||
+    scenarioDeltas.some((s) => s.verdict === 'REGRESSION');
+
   const result = {
     reference_run: refSum.run_id,
     candidate_run: candSum.run_id,
     compared_at: new Date().toISOString(),
     passed: !hasRegression,
-    checks
+    checks,
+    scenario_deltas: scenarioDeltas,
+    baseline_trend: baselineTrend.slice(-12)
   };
 
   fs.writeFileSync(path.join(candDir, `compare-vs-${refSum.run_id}.json`), JSON.stringify(result, null, 2));
@@ -795,6 +1100,7 @@ export async function executeWorkerSegment({
     activeVus++;
     onStatus({ workerId, activeVus, loadLevel, state: 'running' });
 
+    const iterStartTs = Date.now();
     const sessionId = `S_${workerId.replace(/[^a-zA-Z0-9]/g, '')}_${vuIndex}_${Date.now().toString(16)}`;
     const turnObj = item.turns[0] || { prompt: 'Hello', expected: {} };
     const clientIds = ['CL_1001', 'CL_1002', 'CL_1003', 'CL_1004', 'CL_1005'];
@@ -808,11 +1114,14 @@ export async function executeWorkerSegment({
       prompt: promptText,
       messages: [{ role: 'user', content: promptText }]
     };
+    const reqBodyStr = JSON.stringify(reqBody);
+    const reqBytes = Buffer.byteLength(reqBodyStr, 'utf8');
 
     const t0 = Date.now();
     let httpStatus = 0;
     let completionStatus = 'completed';
     let ttftMs = null;
+    let resBytes = 0;
     let answer = '';
     let steps = 1;
     let toolCalls = [];
@@ -834,19 +1143,40 @@ export async function executeWorkerSegment({
           ...(cfg.target.stream ? { Accept: 'text/event-stream' } : {}),
           ...(cfg.target.headers || {})
         },
-        body: JSON.stringify(reqBody)
+        body: reqBodyStr
       });
 
       httpStatus = res.status;
-      const rawText = await res.text();
-      const e2eNow = Date.now() - t0;
+
+      // Measure real streaming first-chunk TTFT when reading body stream
+      let rawText = '';
+      if (cfg.target.stream && res.body && typeof res.body.getReader === 'function') {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunkStr = decoder.decode(value, { stream: true });
+          if (ttftMs === null && chunkStr.trim().length > 0) {
+            ttftMs = Math.max(1, Date.now() - t0);
+          }
+          rawText += chunkStr;
+        }
+        rawText += decoder.decode();
+      } else {
+        rawText = await res.text();
+        if (ttftMs === null && rawText.length > 0) {
+          ttftMs = Math.max(1, Date.now() - t0);
+        }
+      }
+
+      resBytes = Buffer.byteLength(rawText, 'utf8');
 
       if (httpStatus === 429) {
         completionStatus = 'rate_limited';
       } else if (httpStatus >= 400) {
         completionStatus = 'http_error';
       } else if (cfg.target.stream && rawText.includes('data:')) {
-        ttftMs = Math.max(45, Math.round(e2eNow * (0.22 + Math.random() * 0.1)));
         const lines = rawText.split('\n').filter((l) => l.startsWith('data:') && !l.includes('[DONE]'));
         let deltaAcc = '';
         let finalObj = {};
@@ -868,7 +1198,6 @@ export async function executeWorkerSegment({
         serverTiming = finalObj?.x_agent?.timings || {};
       } else {
         const parsed = JSON.parse(rawText || '{}');
-        ttftMs = cfg.target.stream ? Math.round(e2eNow * 0.26) : null;
         answer = getPath(parsed, cfg.target.response?.answerPath) || '';
         steps = getPath(parsed, cfg.target.response?.stepsPath) || 2;
         toolCalls = getPath(parsed, cfg.target.response?.toolCallsPath) || [];
@@ -885,7 +1214,7 @@ export async function executeWorkerSegment({
       activeVus = Math.max(0, activeVus - 1);
     }
 
-    const e2eMs = Date.now() - t0;
+    const e2eMs = Math.max(1, Date.now() - t0);
     const rowIdx = ++rowCounter;
     const det = evaluateDeterministic(turnObj.expected || {}, {
       answer,
@@ -896,6 +1225,8 @@ export async function executeWorkerSegment({
       { answer, completion_status: completionStatus, det_pass: det.pass, contexts },
       turnObj.expected || {}
     );
+    const iterDurationMs = Math.max(e2eMs, Date.now() - iterStartTs);
+    const hostRes = sampleHostResources();
 
     const row = {
       aiperf: 1,
@@ -916,6 +1247,11 @@ export async function executeWorkerSegment({
       http_status: httpStatus,
       ttft_ms: ttftMs,
       e2e_ms: e2eMs,
+      req_bytes: reqBytes,
+      res_bytes: resBytes,
+      group_duration_ms: e2eMs,
+      iteration_duration_ms: iterDurationMs,
+      host_resources: hostRes,
       steps,
       tool_calls: (toolCalls || []).map((t) => t.name || t),
       det_pass: det.pass,
@@ -949,15 +1285,17 @@ export async function executeWorkerSegment({
     for (let r = 0; r < rep; r++) {
       for (const item of datasets) totalList.push(item);
     }
-    const startIdx = segment.startsWith('0.5') ? Math.floor(totalList.length / 2) : 0;
-    const endIdx = segment.endsWith('0.5') ? Math.floor(totalList.length / 2) : totalList.length;
-    const slice = totalList.slice(startIdx, Math.max(startIdx + 1, endIdx));
+    const [segStartRaw, segEndRaw] = String(segment || '0:1').split(':').map(Number);
+    const segStart = Number.isFinite(segStartRaw) ? segStartRaw : 0;
+    const segEnd = Number.isFinite(segEndRaw) ? segEndRaw : 1;
+    const startIdx = Math.floor(totalList.length * segStart);
+    const endIdx = Math.max(startIdx + 1, Math.round(totalList.length * segEnd));
+    const slice = totalList.slice(startIdx, endIdx);
     for (let i = 0; i < slice.length; i++) {
       if (shouldAbort()) break;
       await executeSingleTurn(slice[i], 1, 1);
     }
   } else {
-    // plateaus / load / stress / spike / soak
     const rawLevels = workload === 'plateaus'
       ? String(levelsStr || '2,6').split(',').map((n) => Math.max(1, Number(n.trim()) || 2))
       : workload === 'stress'
@@ -992,8 +1330,9 @@ export async function executeWorkerSegment({
   onStatus({ workerId, activeVus: 0, loadLevel: 0, state: 'idle' });
 }
 
-// CLI execution support
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
+// CLI execution support (safe guard when imported dynamically via node -e)
+const argv1Normalized = (process.argv[1] || '').replace(/\\/g, '/');
+if (argv1Normalized && import.meta.url === `file:///${argv1Normalized}`) {
   const { cmd, args, flags, env } = parseArgs(process.argv.slice(2));
   const configRel = flags.config || 'config/default.json';
   const { cfg } = loadConfig(configRel);

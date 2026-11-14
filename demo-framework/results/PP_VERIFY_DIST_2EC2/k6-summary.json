@@ -1,11 +1,24 @@
 {
   "metrics": {
+    "http_req_duration": {
+      "values": {
+        "min": 912,
+        "avg": 930,
+        "med": 914,
+        "max": 959,
+        "p(90)": 959,
+        "p(95)": 959,
+        "p(99)": 959,
+        "stdev": 21.83
+      }
+    },
     "agent_e2e_duration": {
       "values": {
         "avg": 930,
         "med": 914,
         "p(95)": 959,
-        "p(99)": 959
+        "p(99)": 959,
+        "stdev": 21.83
       }
     },
     "agent_completion_rate": {
